@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Repair Order Detail - Avemar Production Tracking</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { 'outfit': ['Outfit', 'sans-serif'] },
+          colors: {
+            'avemar': {
+              'navy': '#0a1628', 'slate': '#1e293b', 'steel': '#334155',
+              'sky': '#0ea5e9', 'gold': '#f59e0b', 'emerald': '#10b981',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Outfit', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #0a1628 0%, #1e293b 50%, #0f172a 100%); }
+    .stat-card { background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .stage-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+    .stage-dot.completed { background: #10b981; color: white; }
+    .stage-dot.current { background: #0ea5e9; color: white; box-shadow: 0 0 16px rgba(14, 165, 233, 0.5); }
+    .stage-dot.pending { background: rgba(255, 255, 255, 0.1); color: #6b7280; }
+    .stage-connector { height: 3px; flex: 1; min-width: 12px; }
+    .stage-connector.completed { background: #10b981; }
+    .stage-connector.pending { background: rgba(255, 255, 255, 0.1); }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white; color: black; }
+      .stat-card { background: white; border: 1px solid #ccc; }
+      .gradient-bg { background: white; }
+    }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+
+  <!-- Navigation -->
+  <nav class="bg-avemar-navy/80 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50 no-print">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-avemar-gold to-orange-600 rounded-lg flex items-center justify-center">
+            <i class="fas fa-industry text-white text-lg"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-white">Avemar Group</h1>
+            <p class="text-xs text-gray-400">Production Tracking</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-6">
+          <a href="index.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-chart-line mr-2"></i>Dashboard</a>
+          <a href="repair-orders.html" class="text-avemar-gold font-medium"><i class="fas fa-clipboard-list mr-2"></i>Repair Orders</a>
+          <a href="inventory.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-boxes-stacked mr-2"></i>Inventory</a>
+          <a href="bom.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-list-check mr-2"></i>BOM</a>
+          <a href="settings.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-cog mr-2"></i>Settings</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8 no-print">
+      <div class="flex items-center gap-4">
+        <a href="repair-orders.html" class="text-gray-400 hover:text-white transition"><i class="fas fa-arrow-left text-lg"></i></a>
+        <div>
+          <h2 class="text-3xl font-bold" id="roTitle">Loading...</h2>
+          <p class="text-gray-400" id="roSubtitle"></p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="window.print()" class="bg-white/5 border border-white/10 px-4 py-2 rounded-lg text-gray-300 hover:text-white transition text-sm">
+          <i class="fas fa-print mr-2"></i>Print
+        </button>
+        <button onclick="showAdvanceModal()" id="advanceBtn" class="bg-avemar-gold hover:bg-amber-600 text-black px-6 py-2 rounded-lg font-semibold transition text-sm hidden">
+          <i class="fas fa-arrow-right mr-2"></i>Advance Stage
+        </button>
+      </div>
+    </div>
+
+    <!-- Stage Progress Bar -->
+    <div class="stat-card rounded-2xl p-6 mb-6">
+      <h3 class="text-sm font-semibold text-gray-400 mb-4 uppercase tracking-wide">Production Progress</h3>
+      <div class="flex items-center gap-1 overflow-x-auto pb-2" id="stageProgress">
+        <div class="text-gray-400 text-center py-4 w-full"><i class="fas fa-spinner fa-spin mr-2"></i>Loading...</div>
+      </div>
+    </div>
+
+    <!-- Two Column: Details + History -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+
+      <!-- Order Details -->
+      <div class="lg:col-span-2 space-y-6">
+        <div class="stat-card rounded-2xl p-6">
+          <h3 class="text-lg font-semibold mb-4"><i class="fas fa-info-circle text-avemar-sky mr-2"></i>Order Details</h3>
+          <div class="grid grid-cols-2 gap-4 text-sm" id="orderDetails">
+            <div class="text-gray-400 text-center py-8 col-span-2"><i class="fas fa-spinner fa-spin mr-2"></i>Loading...</div>
+          </div>
+        </div>
+
+        <!-- Parts Issued -->
+        <div class="stat-card rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold"><i class="fas fa-box text-orange-400 mr-2"></i>Parts Issued</h3>
+          </div>
+          <div id="partsIssued">
+            <div class="text-gray-400 text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stage History Timeline -->
+      <div class="stat-card rounded-2xl p-6">
+        <h3 class="text-lg font-semibold mb-4"><i class="fas fa-history text-avemar-gold mr-2"></i>Stage History</h3>
+        <div class="space-y-4" id="stageTimeline">
+          <div class="text-gray-400 text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading...</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Advance Stage Modal -->
+  <div id="advanceModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div class="stat-card rounded-2xl p-8 max-w-lg w-full mx-4">
+      <h3 class="text-xl font-bold mb-2">Advance to Next Stage</h3>
+      <p class="text-gray-400 mb-6" id="advanceDescription"></p>
+
+      <!-- BOM Parts for this stage -->
+      <div id="bomPartsSection" class="hidden mb-6">
+        <h4 class="text-sm font-semibold text-gray-400 uppercase mb-3">Parts Required at This Stage</h4>
+        <div id="bomPartsList" class="space-y-2"></div>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm text-gray-400 mb-1">Notes (optional)</label>
+        <textarea id="advanceNotes" rows="3"
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold resize-none"
+          placeholder="Add any notes about this stage completion..."></textarea>
+      </div>
+      <div class="flex gap-3 justify-end">
+        <button onclick="hideAdvanceModal()" class="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
+        <button onclick="advanceStage()" id="confirmAdvanceBtn" class="bg-avemar-gold hover:bg-amber-600 text-black px-6 py-2 rounded-lg font-semibold transition">
+          <i class="fas fa-check mr-2"></i>Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/repair-order-detail.js"></script>
+</body>
+</html>

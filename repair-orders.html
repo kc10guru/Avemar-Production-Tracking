@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Repair Orders - Avemar Production Tracking</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { 'outfit': ['Outfit', 'sans-serif'] },
+          colors: {
+            'avemar': {
+              'navy': '#0a1628', 'slate': '#1e293b', 'steel': '#334155',
+              'sky': '#0ea5e9', 'gold': '#f59e0b', 'emerald': '#10b981',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Outfit', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #0a1628 0%, #1e293b 50%, #0f172a 100%); }
+    .stat-card { background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255, 255, 255, 0.1); }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+
+  <!-- Navigation -->
+  <nav class="bg-avemar-navy/80 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-avemar-gold to-orange-600 rounded-lg flex items-center justify-center">
+            <i class="fas fa-industry text-white text-lg"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-white">Avemar Group</h1>
+            <p class="text-xs text-gray-400">Production Tracking</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-6">
+          <a href="index.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-chart-line mr-2"></i>Dashboard</a>
+          <a href="repair-orders.html" class="text-avemar-gold font-medium"><i class="fas fa-clipboard-list mr-2"></i>Repair Orders</a>
+          <a href="inventory.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-boxes-stacked mr-2"></i>Inventory</a>
+          <a href="bom.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-list-check mr-2"></i>BOM</a>
+          <a href="settings.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-cog mr-2"></i>Settings</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Page Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h2 class="text-3xl font-bold mb-2">Repair Orders</h2>
+        <p class="text-gray-400">Manage all windshield repair orders</p>
+      </div>
+      <a href="new-repair-order.html" class="bg-avemar-gold hover:bg-amber-600 text-black px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2">
+        <i class="fas fa-plus"></i> New Repair Order
+      </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="stat-card rounded-2xl p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Search</label>
+          <input type="text" id="searchInput" placeholder="RO#, customer, serial..."
+            class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold text-sm">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Status</label>
+          <select id="statusFilter" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-avemar-gold text-sm">
+            <option value="">All Statuses</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+            <option value="On Hold">On Hold</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Stage</label>
+          <select id="stageFilter" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-avemar-gold text-sm">
+            <option value="">All Stages</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Part Number</label>
+          <select id="partFilter" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-avemar-gold text-sm">
+            <option value="">All Parts</option>
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button onclick="clearFilters()" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-gray-400 hover:text-white hover:border-white/20 transition text-sm">
+            <i class="fas fa-times mr-1"></i> Clear
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Count -->
+    <div class="flex items-center justify-between mb-4">
+      <p class="text-gray-400 text-sm" id="resultCount">Loading...</p>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="stat-card rounded-2xl overflow-hidden">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-white/10">
+            <th class="text-left py-4 px-6 text-xs text-gray-400 font-medium uppercase">RO Number</th>
+            <th class="text-left py-4 px-6 text-xs text-gray-400 font-medium uppercase">Customer</th>
+            <th class="text-left py-4 px-6 text-xs text-gray-400 font-medium uppercase">Part Number</th>
+            <th class="text-left py-4 px-6 text-xs text-gray-400 font-medium uppercase">Serial</th>
+            <th class="text-left py-4 px-6 text-xs text-gray-400 font-medium uppercase">Stage</th>
+            <th class="text-left py-4 px-6 text-xs text-gray-400 font-medium uppercase">Status</th>
+            <th class="text-left py-4 px-6 text-xs text-gray-400 font-medium uppercase">Received</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTable">
+          <tr><td colspan="7" class="py-12 text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading repair orders...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-white/10 mt-12 py-6">
+    <div class="max-w-7xl mx-auto px-6 text-center text-gray-500 text-sm">
+      <p>&copy; 2026 Avemar Group. Production Tracking System.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/repair-orders.js"></script>
+</body>
+</html>

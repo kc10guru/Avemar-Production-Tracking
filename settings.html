@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - Avemar Production Tracking</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { 'outfit': ['Outfit', 'sans-serif'] },
+          colors: {
+            'avemar': {
+              'navy': '#0a1628', 'slate': '#1e293b', 'steel': '#334155',
+              'sky': '#0ea5e9', 'gold': '#f59e0b', 'emerald': '#10b981',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Outfit', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #0a1628 0%, #1e293b 50%, #0f172a 100%); }
+    .stat-card { background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255, 255, 255, 0.1); }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+
+  <!-- Navigation -->
+  <nav class="bg-avemar-navy/80 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-avemar-gold to-orange-600 rounded-lg flex items-center justify-center">
+            <i class="fas fa-industry text-white text-lg"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-white">Avemar Group</h1>
+            <p class="text-xs text-gray-400">Production Tracking</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-6">
+          <a href="index.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-chart-line mr-2"></i>Dashboard</a>
+          <a href="repair-orders.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-clipboard-list mr-2"></i>Repair Orders</a>
+          <a href="inventory.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-boxes-stacked mr-2"></i>Inventory</a>
+          <a href="bom.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-list-check mr-2"></i>BOM</a>
+          <a href="settings.html" class="text-avemar-gold font-medium"><i class="fas fa-cog mr-2"></i>Settings</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto px-6 py-8">
+
+    <div class="mb-8">
+      <h2 class="text-3xl font-bold mb-2">Settings</h2>
+      <p class="text-gray-400">Configure production tracking parameters</p>
+    </div>
+
+    <!-- Windshield Part Numbers -->
+    <div class="stat-card rounded-2xl p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold"><i class="fas fa-cog text-avemar-sky mr-2"></i>Windshield Part Numbers</h3>
+        <button onclick="showAddPartModal()" class="bg-avemar-gold hover:bg-amber-600 text-black px-4 py-2 rounded-lg font-semibold transition text-sm">
+          <i class="fas fa-plus mr-1"></i>Add
+        </button>
+      </div>
+      <div id="partsList" class="space-y-2">
+        <div class="text-gray-400 text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading...</div>
+      </div>
+    </div>
+
+    <!-- Production Stages / Time Limits -->
+    <div class="stat-card rounded-2xl p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold"><i class="fas fa-stream text-avemar-gold mr-2"></i>Production Stage Time Limits</h3>
+        <button onclick="saveTimeLimits()" id="saveTimeLimitsBtn" class="bg-avemar-emerald hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+          <i class="fas fa-save mr-1"></i>Save Changes
+        </button>
+      </div>
+      <p class="text-gray-400 text-sm mb-4">Set the maximum allowed hours a unit can stay in each stage before being flagged as late.</p>
+      <div id="stagesList" class="space-y-2">
+        <div class="text-gray-400 text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading...</div>
+      </div>
+    </div>
+
+    <!-- Database Info -->
+    <div class="stat-card rounded-2xl p-6">
+      <h3 class="text-lg font-semibold mb-4"><i class="fas fa-database text-gray-400 mr-2"></i>Database Connection</h3>
+      <div class="grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <span class="text-gray-500 text-xs uppercase">Supabase URL</span>
+          <p class="text-gray-300 mt-1 font-mono text-xs">https://avemar-db.duckdns.org</p>
+        </div>
+        <div>
+          <span class="text-gray-500 text-xs uppercase">Status</span>
+          <p class="text-emerald-400 mt-1" id="dbStatus"><i class="fas fa-spinner fa-spin mr-1"></i>Checking...</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Add Part Modal -->
+  <div id="addPartModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div class="stat-card rounded-2xl p-8 max-w-md w-full mx-4">
+      <h3 class="text-xl font-bold mb-6">Add Windshield Part Number</h3>
+      <form onsubmit="handleAddPart(event)">
+        <div class="mb-4">
+          <label class="block text-xs text-gray-400 mb-1">Part Number *</label>
+          <input type="text" id="newPartNumber" required
+            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold"
+            placeholder="e.g., 101-384025-25">
+        </div>
+        <div class="mb-6">
+          <label class="block text-xs text-gray-400 mb-1">Description</label>
+          <input type="text" id="newPartDescription"
+            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold"
+            placeholder="e.g., CRJ Windshield Assembly - Dash 25">
+        </div>
+        <div class="flex gap-3 justify-end">
+          <button type="button" onclick="hideAddPartModal()" class="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
+          <button type="submit" class="bg-avemar-gold hover:bg-amber-600 text-black px-6 py-2 rounded-lg font-semibold transition">
+            <i class="fas fa-save mr-2"></i>Add
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/settings.js"></script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parts Inventory - Avemar Production Tracking</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { 'outfit': ['Outfit', 'sans-serif'] },
+          colors: {
+            'avemar': {
+              'navy': '#0a1628', 'slate': '#1e293b', 'steel': '#334155',
+              'sky': '#0ea5e9', 'gold': '#f59e0b', 'emerald': '#10b981',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Outfit', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #0a1628 0%, #1e293b 50%, #0f172a 100%); }
+    .stat-card { background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255, 255, 255, 0.1); }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+
+  <!-- Navigation -->
+  <nav class="bg-avemar-navy/80 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-avemar-gold to-orange-600 rounded-lg flex items-center justify-center">
+            <i class="fas fa-industry text-white text-lg"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-white">Avemar Group</h1>
+            <p class="text-xs text-gray-400">Production Tracking</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-6">
+          <a href="index.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-chart-line mr-2"></i>Dashboard</a>
+          <a href="repair-orders.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-clipboard-list mr-2"></i>Repair Orders</a>
+          <a href="inventory.html" class="text-avemar-gold font-medium"><i class="fas fa-boxes-stacked mr-2"></i>Inventory</a>
+          <a href="bom.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-list-check mr-2"></i>BOM</a>
+          <a href="settings.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-cog mr-2"></i>Settings</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h2 class="text-3xl font-bold mb-2">Parts Inventory</h2>
+        <p class="text-gray-400">Manage subcomponent stock levels</p>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="showReceiveModal()" class="bg-avemar-emerald hover:bg-emerald-600 text-white px-5 py-3 rounded-xl font-semibold transition flex items-center gap-2 text-sm">
+          <i class="fas fa-truck"></i> Receive Stock
+        </button>
+        <button onclick="showAddModal()" class="bg-avemar-gold hover:bg-amber-600 text-black px-5 py-3 rounded-xl font-semibold transition flex items-center gap-2 text-sm">
+          <i class="fas fa-plus"></i> Add Part
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="stat-card rounded-2xl p-4 mb-6">
+      <div class="flex gap-4 items-center">
+        <select id="categoryFilter" class="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-avemar-gold text-sm">
+          <option value="">All Categories</option>
+          <option value="Glass">Glass</option>
+          <option value="Electrical">Electrical</option>
+          <option value="Seals">Seals</option>
+          <option value="Hardware">Hardware</option>
+          <option value="Consumable">Consumable</option>
+          <option value="General">General</option>
+        </select>
+        <label class="flex items-center gap-2 text-sm text-gray-400 cursor-pointer">
+          <input type="checkbox" id="lowStockOnly" class="rounded border-gray-600 bg-white/10 text-avemar-gold focus:ring-avemar-gold">
+          Low stock only
+        </label>
+        <span class="text-gray-400 text-sm ml-auto" id="inventoryCount">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Inventory Table -->
+    <div class="stat-card rounded-2xl overflow-hidden">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-white/10">
+            <th class="text-left py-4 px-6 text-xs text-gray-400 font-medium uppercase">Part Number</th>
+            <th class="text-left py-4 px-6 text-xs text-gray-400 font-medium uppercase">Description</th>
+            <th class="text-left py-4 px-6 text-xs text-gray-400 font-medium uppercase">Category</th>
+            <th class="text-right py-4 px-6 text-xs text-gray-400 font-medium uppercase">On Hand</th>
+            <th class="text-right py-4 px-6 text-xs text-gray-400 font-medium uppercase">Reorder Pt</th>
+            <th class="text-right py-4 px-6 text-xs text-gray-400 font-medium uppercase">Lead Time</th>
+            <th class="text-center py-4 px-6 text-xs text-gray-400 font-medium uppercase">Status</th>
+            <th class="text-center py-4 px-6 text-xs text-gray-400 font-medium uppercase">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryTable">
+          <tr><td colspan="8" class="py-12 text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Add Part Modal -->
+  <div id="addModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div class="stat-card rounded-2xl p-8 max-w-lg w-full mx-4">
+      <h3 class="text-xl font-bold mb-6" id="addModalTitle">Add Subcomponent</h3>
+      <form onsubmit="handleSavePart(event)">
+        <input type="hidden" id="editPartId">
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Part Number *</label>
+            <input type="text" id="subPartNumber" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Category</label>
+            <select id="subCategory" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold">
+              <option value="General">General</option>
+              <option value="Glass">Glass</option>
+              <option value="Electrical">Electrical</option>
+              <option value="Seals">Seals</option>
+              <option value="Hardware">Hardware</option>
+              <option value="Consumable">Consumable</option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-xs text-gray-400 mb-1">Description *</label>
+          <input type="text" id="subDescription" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold">
+        </div>
+        <div class="grid grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Unit of Measure</label>
+            <input type="text" id="subUom" value="each" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Qty On Hand</label>
+            <input type="number" id="subQty" value="0" min="0" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Unit Cost</label>
+            <input type="number" id="subCost" step="0.01" min="0" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold">
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Reorder Point</label>
+            <input type="number" id="subReorder" value="0" min="0" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Reorder Qty</label>
+            <input type="number" id="subReorderQty" value="0" min="0" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Lead Time (days)</label>
+            <input type="number" id="subLeadTime" value="14" min="0" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold">
+          </div>
+        </div>
+        <div class="mb-6">
+          <label class="block text-xs text-gray-400 mb-1">Supplier</label>
+          <input type="text" id="subSupplier" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold">
+        </div>
+        <div class="flex gap-3 justify-end">
+          <button type="button" onclick="hideAddModal()" class="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
+          <button type="submit" class="bg-avemar-gold hover:bg-amber-600 text-black px-6 py-2 rounded-lg font-semibold transition">
+            <i class="fas fa-save mr-2"></i>Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Receive Stock Modal -->
+  <div id="receiveModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div class="stat-card rounded-2xl p-8 max-w-md w-full mx-4">
+      <h3 class="text-xl font-bold mb-6">Receive Stock</h3>
+      <div class="mb-4">
+        <label class="block text-xs text-gray-400 mb-1">Select Part</label>
+        <select id="receivePart" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold">
+          <option value="">Select a part...</option>
+        </select>
+      </div>
+      <div class="mb-6">
+        <label class="block text-xs text-gray-400 mb-1">Quantity Received</label>
+        <input type="number" id="receiveQty" min="1" value="1" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold">
+      </div>
+      <div class="flex gap-3 justify-end">
+        <button onclick="hideReceiveModal()" class="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
+        <button onclick="handleReceiveStock()" class="bg-avemar-emerald hover:bg-emerald-600 text-white px-6 py-2 rounded-lg font-semibold transition">
+          <i class="fas fa-check mr-2"></i>Receive
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/inventory.js"></script>
+</body>
+</html>

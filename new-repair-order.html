@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Repair Order - Avemar Production Tracking</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { 'outfit': ['Outfit', 'sans-serif'] },
+          colors: {
+            'avemar': {
+              'navy': '#0a1628', 'slate': '#1e293b', 'steel': '#334155',
+              'sky': '#0ea5e9', 'gold': '#f59e0b', 'emerald': '#10b981',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Outfit', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #0a1628 0%, #1e293b 50%, #0f172a 100%); }
+    .stat-card { background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255, 255, 255, 0.1); }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+
+  <!-- Navigation -->
+  <nav class="bg-avemar-navy/80 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-avemar-gold to-orange-600 rounded-lg flex items-center justify-center">
+            <i class="fas fa-industry text-white text-lg"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-white">Avemar Group</h1>
+            <p class="text-xs text-gray-400">Production Tracking</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-6">
+          <a href="index.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-chart-line mr-2"></i>Dashboard</a>
+          <a href="repair-orders.html" class="text-avemar-gold font-medium"><i class="fas fa-clipboard-list mr-2"></i>Repair Orders</a>
+          <a href="inventory.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-boxes-stacked mr-2"></i>Inventory</a>
+          <a href="bom.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-list-check mr-2"></i>BOM</a>
+          <a href="settings.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-cog mr-2"></i>Settings</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-4xl mx-auto px-6 py-8">
+
+    <div class="flex items-center gap-4 mb-8">
+      <a href="repair-orders.html" class="text-gray-400 hover:text-white transition"><i class="fas fa-arrow-left"></i></a>
+      <div>
+        <h2 class="text-3xl font-bold mb-1">New Repair Order</h2>
+        <p class="text-gray-400">Create a new windshield repair order</p>
+      </div>
+    </div>
+
+    <form onsubmit="handleSubmit(event)" class="space-y-6">
+
+      <!-- Customer & Contract Info -->
+      <div class="stat-card rounded-2xl p-6">
+        <h3 class="text-lg font-semibold mb-4"><i class="fas fa-building text-avemar-sky mr-2"></i>Customer Information</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Customer Name <span class="text-red-400">*</span></label>
+            <input type="text" id="customerName" required
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold"
+              placeholder="Company name">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Contract Type <span class="text-red-400">*</span></label>
+            <select id="contractType" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-avemar-gold">
+              <option value="Commercial Sales">Commercial Sales</option>
+              <option value="C12">C12</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Purchase Order</label>
+            <input type="text" id="purchaseOrder"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold"
+              placeholder="PO number">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Shipping Address</label>
+            <input type="text" id="shippingAddress"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold"
+              placeholder="Return shipping address">
+          </div>
+        </div>
+      </div>
+
+      <!-- Point of Contact -->
+      <div class="stat-card rounded-2xl p-6">
+        <h3 class="text-lg font-semibold mb-4"><i class="fas fa-user text-avemar-emerald mr-2"></i>Point of Contact</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Contact Name</label>
+            <input type="text" id="contactName"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold"
+              placeholder="Full name">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Email</label>
+            <input type="email" id="contactEmail"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold"
+              placeholder="email@company.com">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Phone</label>
+            <input type="tel" id="contactPhone"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold"
+              placeholder="(555) 123-4567">
+          </div>
+        </div>
+      </div>
+
+      <!-- Windshield / Part Info -->
+      <div class="stat-card rounded-2xl p-6">
+        <h3 class="text-lg font-semibold mb-4"><i class="fas fa-cog text-avemar-gold mr-2"></i>Windshield Details</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Part Number <span class="text-red-400">*</span></label>
+            <select id="partNumber" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-avemar-gold">
+              <option value="">Select part number...</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Serial Number <span class="text-red-400">*</span></label>
+            <input type="text" id="serialNumber" required
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold"
+              placeholder="Windshield serial number">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Aircraft Tail Number</label>
+            <input type="text" id="aircraftTailNumber"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold"
+              placeholder="e.g., N12345">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Aircraft Type</label>
+            <input type="text" id="aircraftType"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold"
+              placeholder="e.g., CRJ-200">
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Info -->
+      <div class="stat-card rounded-2xl p-6">
+        <h3 class="text-lg font-semibold mb-4"><i class="fas fa-info-circle text-gray-400 mr-2"></i>Additional Information</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Date Received</label>
+            <input type="date" id="dateReceived"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-avemar-gold">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Expected Completion</label>
+            <input type="date" id="expectedCompletion"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-avemar-gold">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm text-gray-400 mb-1">Notes</label>
+            <textarea id="notes" rows="3"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold resize-none"
+              placeholder="Any additional notes about this repair order..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Messages -->
+      <div id="statusMessage" class="hidden p-4 rounded-xl text-sm"></div>
+
+      <!-- Submit -->
+      <div class="flex items-center justify-end gap-4">
+        <a href="repair-orders.html" class="px-6 py-3 text-gray-400 hover:text-white transition">Cancel</a>
+        <button type="submit" id="submitBtn" class="bg-avemar-gold hover:bg-amber-600 text-black px-8 py-3 rounded-xl font-semibold transition flex items-center gap-2">
+          <i class="fas fa-save"></i> Create Repair Order
+        </button>
+      </div>
+    </form>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/new-repair-order.js"></script>
+</body>
+</html>
