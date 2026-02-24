@@ -3,6 +3,7 @@ let order = null;
 let stages = [];
 let history = [];
 let issuedParts = [];
+let documents = [];
 let currentUser = null;
 let productionParts = [];
 
@@ -13,12 +14,13 @@ async function loadPage() {
 
   currentUser = await getCurrentUser();
 
-  [order, stages, history, issuedParts, productionParts] = await Promise.all([
+  [order, stages, history, issuedParts, productionParts, documents] = await Promise.all([
     db.getRepairOrder(id),
     db.getProductionStages(),
     db.getStageHistory(id),
     db.getPartsIssuance(id),
-    db.getProductionParts()
+    db.getProductionParts(),
+    db.getDocuments(id)
   ]);
 
   if (!order) {
@@ -29,6 +31,7 @@ async function loadPage() {
   renderHeader();
   renderStageProgress();
   renderOrderDetails();
+  renderDocuments();
   renderStageTimeline();
   renderPartsIssued();
 }
@@ -186,6 +189,142 @@ function renderPartsIssued() {
   `;
 }
 
+// ─── Documents ──────────────────────────────────────────
+const ALLOWED_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+function renderDocuments() {
+  const container = document.getElementById('documentList');
+
+  if (!documents || documents.length === 0) {
+    container.innerHTML = '<div class="text-gray-400 text-center py-4 text-sm">No documents uploaded yet</div>';
+    return;
+  }
+
+  container.innerHTML = documents.map(doc => {
+    const isImage = doc.fileType && doc.fileType.startsWith('image/');
+    const isPdf = doc.fileType === 'application/pdf';
+    const icon = isPdf ? 'fa-file-pdf text-red-400' : 'fa-file-image text-purple-400';
+    const sizeStr = formatFileSize(doc.fileSize);
+    const stageName = stages.find(s => s.stageNumber === doc.stageNumber)?.stageName || `Stage ${doc.stageNumber}`;
+    const date = new Date(doc.uploadedAt).toLocaleDateString();
+
+    return `
+      <div class="flex items-center gap-4 p-3 bg-white/5 rounded-xl hover:bg-white/10 transition group" data-doc-id="${doc.id}" data-file-path="${doc.filePath}">
+        <div class="w-10 h-10 ${isPdf ? 'bg-red-500/20' : 'bg-purple-500/20'} rounded-lg flex items-center justify-center flex-shrink-0">
+          <i class="fas ${icon} text-lg"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-white text-sm font-medium truncate">${doc.fileName}</p>
+          <p class="text-xs text-gray-500">${sizeStr} &bull; ${stageName} &bull; ${date}</p>
+        </div>
+        <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition">
+          <button onclick="viewDocument('${doc.filePath}', ${isImage})" class="w-8 h-8 bg-avemar-sky/20 hover:bg-avemar-sky/30 rounded-lg flex items-center justify-center text-avemar-sky transition" title="View / Download">
+            <i class="fas fa-eye text-sm"></i>
+          </button>
+          <button onclick="confirmDeleteDocument('${doc.id}', '${doc.filePath}', '${doc.fileName.replace(/'/g, "\\'")}')" class="w-8 h-8 bg-red-500/20 hover:bg-red-500/30 rounded-lg flex items-center justify-center text-red-400 transition" title="Delete">
+            <i class="fas fa-trash text-sm"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function formatFileSize(bytes) {
+  if (!bytes) return '--';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+async function handleFileUpload(files) {
+  const progressEl = document.getElementById('uploadProgress');
+  const progressText = document.getElementById('uploadProgressText');
+
+  const validFiles = Array.from(files).filter(f => {
+    if (!ALLOWED_TYPES.includes(f.type)) {
+      alert(`"${f.name}" is not an allowed file type. Use PDF, PNG, JPG, GIF, or WEBP.`);
+      return false;
+    }
+    if (f.size > MAX_FILE_SIZE) {
+      alert(`"${f.name}" exceeds the 10MB size limit.`);
+      return false;
+    }
+    return true;
+  });
+
+  if (validFiles.length === 0) return;
+
+  progressEl.classList.remove('hidden');
+
+  for (let i = 0; i < validFiles.length; i++) {
+    const file = validFiles[i];
+    progressText.textContent = `Uploading ${file.name} (${i + 1} of ${validFiles.length})...`;
+
+    const result = await db.uploadDocument(order.id, file, order.currentStage);
+    if (!result) {
+      alert(`Failed to upload "${file.name}". Please try again.`);
+    }
+  }
+
+  progressEl.classList.add('hidden');
+
+  documents = await db.getDocuments(order.id);
+  renderDocuments();
+}
+
+async function viewDocument(filePath, isImage) {
+  const url = await db.getDocumentUrl(filePath);
+  if (url) {
+    window.open(url, '_blank');
+  } else {
+    alert('Could not generate download link. Please try again.');
+  }
+}
+
+async function confirmDeleteDocument(docId, filePath, fileName) {
+  if (!confirm(`Delete "${fileName}"? This cannot be undone.`)) return;
+
+  const success = await db.deleteDocument(docId, filePath);
+  if (success) {
+    documents = await db.getDocuments(order.id);
+    renderDocuments();
+  } else {
+    alert('Failed to delete document. Please try again.');
+  }
+}
+
+function setupDocumentUpload() {
+  const fileInput = document.getElementById('docFileInput');
+  const dropZone = document.getElementById('dropZone');
+
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      handleFileUpload(e.target.files);
+      e.target.value = '';
+    }
+  });
+
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('border-avemar-sky/50', 'bg-avemar-sky/5');
+  });
+
+  dropZone.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-avemar-sky/50', 'bg-avemar-sky/5');
+  });
+
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-avemar-sky/50', 'bg-avemar-sky/5');
+    if (e.dataTransfer.files.length > 0) {
+      handleFileUpload(e.dataTransfer.files);
+    }
+  });
+}
+
 // ─── Stage Advancement ──────────────────────────────────
 function showAdvanceModal() {
   const nextStageNum = order.currentStage + 1;
@@ -318,5 +457,6 @@ async function advanceStage() {
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initializeAuth();
+  setupDocumentUpload();
   await loadPage();
 });

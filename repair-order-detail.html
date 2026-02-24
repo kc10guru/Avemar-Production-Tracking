@@ -113,6 +113,39 @@
           </div>
         </div>
 
+        <!-- Documents -->
+        <div class="stat-card rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold"><i class="fas fa-file-alt text-purple-400 mr-2"></i>Documents</h3>
+            <label class="bg-avemar-sky/20 hover:bg-avemar-sky/30 text-avemar-sky px-4 py-2 rounded-lg text-sm cursor-pointer transition">
+              <i class="fas fa-upload mr-2"></i>Upload
+              <input type="file" id="docFileInput" class="hidden" multiple
+                accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,image/png,image/jpeg,image/gif,image/webp,application/pdf">
+            </label>
+          </div>
+
+          <!-- Drop zone -->
+          <div id="dropZone"
+            class="border-2 border-dashed border-white/10 rounded-xl p-6 text-center mb-4 transition hover:border-avemar-sky/40">
+            <i class="fas fa-cloud-upload-alt text-3xl text-gray-600 mb-2"></i>
+            <p class="text-gray-500 text-sm">Drag and drop files here, or click Upload above</p>
+            <p class="text-gray-600 text-xs mt-1">PDF, PNG, JPG, GIF, WEBP — Max 10MB per file</p>
+          </div>
+
+          <!-- Upload progress -->
+          <div id="uploadProgress" class="hidden mb-4">
+            <div class="flex items-center gap-3 p-3 bg-avemar-sky/10 rounded-lg">
+              <i class="fas fa-spinner fa-spin text-avemar-sky"></i>
+              <span class="text-sm text-avemar-sky" id="uploadProgressText">Uploading...</span>
+            </div>
+          </div>
+
+          <!-- Document list -->
+          <div id="documentList">
+            <div class="text-gray-400 text-center py-4 text-sm"><i class="fas fa-spinner fa-spin mr-2"></i>Loading...</div>
+          </div>
+        </div>
+
         <!-- Parts Issued -->
         <div class="stat-card rounded-2xl p-6">
           <div class="flex items-center justify-between mb-4">

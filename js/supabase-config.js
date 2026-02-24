@@ -349,6 +349,60 @@
       };
     },
 
+    // ─── Repair Order Documents ────────────────────────────
+    async getDocuments(repairOrderId) {
+      const { data, error } = await window.supabaseClient
+        .from('repair_order_documents').select('*')
+        .eq('repair_order_id', repairOrderId)
+        .order('uploaded_at', { ascending: false });
+      if (error) { console.error('Error fetching documents:', error); return []; }
+      return toCamelCase(data);
+    },
+
+    async uploadDocument(repairOrderId, file, stageNumber) {
+      const timestamp = Date.now();
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const filePath = `${repairOrderId}/${timestamp}_${safeName}`;
+
+      const { error: uploadError } = await window.supabaseClient.storage
+        .from('repair-order-docs')
+        .upload(filePath, file, { contentType: file.type });
+      if (uploadError) { console.error('Error uploading file:', uploadError); return null; }
+
+      const { data, error: dbError } = await window.supabaseClient
+        .from('repair_order_documents').insert({
+          repair_order_id: repairOrderId,
+          file_name: file.name,
+          file_path: filePath,
+          file_type: file.type,
+          file_size: file.size,
+          stage_number: stageNumber,
+          uploaded_by: (await window.supabaseClient.auth.getUser()).data?.user?.id || null
+        }).select();
+      if (dbError) { console.error('Error saving document record:', dbError); return null; }
+      return toCamelCase(data[0]);
+    },
+
+    async deleteDocument(docId, filePath) {
+      const { error: storageError } = await window.supabaseClient.storage
+        .from('repair-order-docs')
+        .remove([filePath]);
+      if (storageError) { console.error('Error deleting file from storage:', storageError); }
+
+      const { error: dbError } = await window.supabaseClient
+        .from('repair_order_documents').delete().eq('id', docId);
+      if (dbError) { console.error('Error deleting document record:', dbError); return false; }
+      return true;
+    },
+
+    async getDocumentUrl(filePath) {
+      const { data, error } = await window.supabaseClient.storage
+        .from('repair-order-docs')
+        .createSignedUrl(filePath, 3600);
+      if (error) { console.error('Error creating signed URL:', error); return null; }
+      return data.signedUrl;
+    },
+
     // ─── Realtime Subscriptions ─────────────────────────────
     subscribeToRepairOrders(callback) {
       return window.supabaseClient

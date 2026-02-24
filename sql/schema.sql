@@ -101,6 +101,20 @@ CREATE TABLE IF NOT EXISTS parts_issuance (
   notes TEXT
 );
 
+-- 8. Repair Order Documents (file uploads linked to repair orders)
+CREATE TABLE IF NOT EXISTS repair_order_documents (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  repair_order_id UUID NOT NULL REFERENCES repair_orders(id) ON DELETE CASCADE,
+  file_name TEXT NOT NULL,
+  file_path TEXT NOT NULL,
+  file_type TEXT,
+  file_size BIGINT,
+  stage_number INTEGER,
+  uploaded_by UUID,
+  uploaded_at TIMESTAMPTZ DEFAULT now(),
+  notes TEXT
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_repair_orders_status ON repair_orders(status);
 CREATE INDEX IF NOT EXISTS idx_repair_orders_current_stage ON repair_orders(current_stage);
@@ -111,6 +125,7 @@ CREATE INDEX IF NOT EXISTS idx_bom_items_production_part ON bom_items(production
 CREATE INDEX IF NOT EXISTS idx_bom_items_subcomponent ON bom_items(subcomponent_id);
 CREATE INDEX IF NOT EXISTS idx_parts_issuance_repair_order ON parts_issuance(repair_order_id);
 CREATE INDEX IF NOT EXISTS idx_parts_issuance_subcomponent ON parts_issuance(subcomponent_id);
+CREATE INDEX IF NOT EXISTS idx_ro_documents_repair_order ON repair_order_documents(repair_order_id);
 
 -- Enable Row Level Security
 ALTER TABLE production_parts ENABLE ROW LEVEL SECURITY;
@@ -120,6 +135,7 @@ ALTER TABLE stage_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE subcomponents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bom_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE parts_issuance ENABLE ROW LEVEL SECURITY;
+ALTER TABLE repair_order_documents ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies: allow authenticated users full access
 CREATE POLICY "Authenticated users can read production_parts" ON production_parts FOR SELECT TO authenticated USING (true);
@@ -156,6 +172,25 @@ CREATE POLICY "Authenticated users can read parts_issuance" ON parts_issuance FO
 CREATE POLICY "Authenticated users can insert parts_issuance" ON parts_issuance FOR INSERT TO authenticated WITH CHECK (true);
 CREATE POLICY "Authenticated users can update parts_issuance" ON parts_issuance FOR UPDATE TO authenticated USING (true);
 CREATE POLICY "Authenticated users can delete parts_issuance" ON parts_issuance FOR DELETE TO authenticated USING (true);
+
+CREATE POLICY "Authenticated users can read repair_order_documents" ON repair_order_documents FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Authenticated users can insert repair_order_documents" ON repair_order_documents FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Authenticated users can update repair_order_documents" ON repair_order_documents FOR UPDATE TO authenticated USING (true);
+CREATE POLICY "Authenticated users can delete repair_order_documents" ON repair_order_documents FOR DELETE TO authenticated USING (true);
+
+-- ============================================================
+-- STORAGE BUCKET FOR DOCUMENTS
+-- ============================================================
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('repair-order-docs', 'repair-order-docs', false)
+ON CONFLICT (id) DO NOTHING;
+
+CREATE POLICY "Authenticated users can upload repair docs" ON storage.objects
+  FOR INSERT TO authenticated WITH CHECK (bucket_id = 'repair-order-docs');
+CREATE POLICY "Authenticated users can read repair docs" ON storage.objects
+  FOR SELECT TO authenticated USING (bucket_id = 'repair-order-docs');
+CREATE POLICY "Authenticated users can delete repair docs" ON storage.objects
+  FOR DELETE TO authenticated USING (bucket_id = 'repair-order-docs');
 
 -- ============================================================
 -- SEED DATA
