@@ -32,10 +32,13 @@ function getWeekDates(weekStr) {
     return { start: monday, end: sunday };
   }
   const [year, week] = weekStr.split('-W').map(Number);
-  const jan1 = new Date(year, 0, 1);
-  const dayOfWeek = jan1.getDay();
-  const daysToMonday = (dayOfWeek <= 1) ? (1 - dayOfWeek) : (8 - dayOfWeek);
-  const monday = new Date(year, 0, 1 + daysToMonday + (week - 1) * 7);
+  // ISO 8601: Jan 4 is always in week 1
+  const jan4 = new Date(year, 0, 4);
+  const jan4Day = jan4.getDay() || 7;
+  const mondayOfWeek1 = new Date(jan4);
+  mondayOfWeek1.setDate(jan4.getDate() - jan4Day + 1);
+  const monday = new Date(mondayOfWeek1);
+  monday.setDate(mondayOfWeek1.getDate() + (week - 1) * 7);
   monday.setHours(0, 0, 0, 0);
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
