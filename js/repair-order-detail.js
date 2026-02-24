@@ -334,10 +334,10 @@ async function confirmRevertStage() {
   const currentStageDef = stages.find(s => s.stageNumber === order.currentStage);
   const prevStageDef = stages.find(s => s.stageNumber === prevStageNum);
 
-  const partsAtPrev = issuedParts.filter(p => p.stageNumber === prevStageNum);
+  const partsAtCurrent = issuedParts.filter(p => p.stageNumber === order.currentStage);
   let message = `Go back from "${currentStageDef?.stageName}" to "${prevStageDef?.stageName}"?`;
-  if (partsAtPrev.length > 0) {
-    message += `\n\n${partsAtPrev.length} part(s) issued at Stage ${prevStageNum} will be reversed and returned to inventory.`;
+  if (partsAtCurrent.length > 0) {
+    message += `\n\n${partsAtCurrent.length} part(s) issued at Stage ${order.currentStage} (${currentStageDef?.stageName}) will be reversed and returned to inventory.`;
   }
 
   if (!confirm(message)) return;
@@ -368,8 +368,8 @@ async function revertStage() {
       });
     }
 
-    // Reverse any parts issued at the previous stage (they were issued incorrectly or need re-evaluation)
-    await db.reversePartsForStage(order.id, prevStageNum);
+    // Reverse any parts issued when entering the current stage
+    await db.reversePartsForStage(order.id, order.currentStage);
 
     // Update the repair order back to the previous stage
     await db.updateRepairOrder(order.id, {
@@ -507,6 +507,13 @@ async function advanceStage() {
     }
 
     hideAdvanceModal();
+
+    if (isComplete) {
+      alert(`Repair order ${order.roNumber} is now complete!`);
+      window.location.href = 'index.html';
+      return;
+    }
+
     await loadPage();
   } catch (error) {
     console.error('Error advancing stage:', error);
