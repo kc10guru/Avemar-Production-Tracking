@@ -334,8 +334,8 @@ function showAdvanceModal() {
   document.getElementById('advanceDescription').textContent =
     `Moving from "${currentStage?.stageName}" to "${nextStage?.stageName || 'Completed'}"`;
 
-  // Load BOM parts for the next stage
-  loadBomPartsForStage(nextStageNum);
+  // Load BOM parts for the current stage being completed
+  loadBomPartsForStage(order.currentStage);
 
   document.getElementById('advanceModal').classList.remove('hidden');
 }
@@ -416,7 +416,7 @@ async function advanceStage() {
         repairOrderId: order.id,
         subcomponentId: cb.dataset.subId,
         bomItemId: cb.dataset.bomId,
-        stageNumber: order.currentStage + 1,
+        stageNumber: order.currentStage,
         quantityIssued: Number(cb.dataset.qty),
         issuedBy: userId
       });
