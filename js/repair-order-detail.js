@@ -44,6 +44,9 @@ function renderHeader() {
   if (order.status === 'In Progress' && order.currentStage <= 15) {
     document.getElementById('advanceBtn').classList.remove('hidden');
   }
+  if (order.status === 'In Progress' && order.currentStage > 1) {
+    document.getElementById('revertBtn').classList.remove('hidden');
+  }
 }
 
 function renderStageProgress() {
@@ -323,6 +326,65 @@ function setupDocumentUpload() {
       handleFileUpload(e.dataTransfer.files);
     }
   });
+}
+
+// ─── Stage Revert ────────────────────────────────────────
+async function confirmRevertStage() {
+  const prevStageNum = order.currentStage - 1;
+  const currentStageDef = stages.find(s => s.stageNumber === order.currentStage);
+  const prevStageDef = stages.find(s => s.stageNumber === prevStageNum);
+
+  const partsAtPrev = issuedParts.filter(p => p.stageNumber === prevStageNum);
+  let message = `Go back from "${currentStageDef?.stageName}" to "${prevStageDef?.stageName}"?`;
+  if (partsAtPrev.length > 0) {
+    message += `\n\n${partsAtPrev.length} part(s) issued at Stage ${prevStageNum} will be reversed and returned to inventory.`;
+  }
+
+  if (!confirm(message)) return;
+  await revertStage();
+}
+
+async function revertStage() {
+  const revertBtn = document.getElementById('revertBtn');
+  revertBtn.disabled = true;
+  revertBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Reverting...';
+
+  try {
+    const prevStageNum = order.currentStage - 1;
+
+    // Delete the current stage's history entry (the one we're reverting FROM)
+    const currentEntry = history.find(h => h.stageNumber === order.currentStage && !h.exitedAt);
+    if (currentEntry) {
+      await db.deleteStageEntry(currentEntry.id);
+    }
+
+    // Reopen the previous stage's history entry (remove its exit timestamp)
+    const prevEntry = history.find(h => h.stageNumber === prevStageNum);
+    if (prevEntry) {
+      await db.updateStageEntry(prevEntry.id, {
+        exitedAt: null,
+        completedBy: null,
+        isLate: false
+      });
+    }
+
+    // Reverse any parts issued at the previous stage (they were issued incorrectly or need re-evaluation)
+    await db.reversePartsForStage(order.id, prevStageNum);
+
+    // Update the repair order back to the previous stage
+    await db.updateRepairOrder(order.id, {
+      currentStage: prevStageNum,
+      status: 'In Progress'
+    });
+
+    await loadPage();
+  } catch (error) {
+    console.error('Error reverting stage:', error);
+    alert('Failed to revert stage. Please try again.');
+  }
+
+  revertBtn.disabled = false;
+  revertBtn.innerHTML = '<i class="fas fa-arrow-left mr-2"></i>Go Back';
 }
 
 // ─── Stage Advancement ──────────────────────────────────

@@ -305,6 +305,32 @@
       return toCamelCase(data[0]);
     },
 
+    async reversePartsForStage(repairOrderId, stageNumber) {
+      const { data, error } = await window.supabaseClient
+        .from('parts_issuance').select('*')
+        .eq('repair_order_id', repairOrderId)
+        .eq('stage_number', stageNumber);
+      if (error) { console.error('Error fetching parts to reverse:', error); return false; }
+      if (!data || data.length === 0) return true;
+
+      for (const record of data) {
+        const sub = await this.getSubcomponent(record.subcomponent_id);
+        if (sub) {
+          const restoredQty = Number(sub.quantityOnHand) + Number(record.quantity_issued);
+          await this.updateSubcomponent(record.subcomponent_id, { quantityOnHand: restoredQty });
+        }
+        await window.supabaseClient.from('parts_issuance').delete().eq('id', record.id);
+      }
+      return true;
+    },
+
+    async deleteStageEntry(id) {
+      const { error } = await window.supabaseClient
+        .from('stage_history').delete().eq('id', id);
+      if (error) { console.error('Error deleting stage entry:', error); return false; }
+      return true;
+    },
+
     // ─── Dashboard Helpers ──────────────────────────────────
     async getDashboardStats() {
       const [orders, stages, lowStock] = await Promise.all([
