@@ -333,10 +333,11 @@
 
     // ─── Dashboard Helpers ──────────────────────────────────
     async getDashboardStats() {
-      const [orders, stages, lowStock] = await Promise.all([
+      const [orders, stages, allSubs, productionParts] = await Promise.all([
         this.getRepairOrders(),
         this.getProductionStages(),
-        this.getLowStockSubcomponents()
+        this.getSubcomponents(),
+        this.getProductionParts()
       ]);
 
       const active = orders.filter(o => o.status === 'In Progress');
@@ -348,6 +349,32 @@
         const d = new Date(o.dateCompleted);
         return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
       });
+
+      // Calculate projected needs from all active in-progress orders
+      const projectedNeeds = {};
+      for (const order of active) {
+        const prodPart = productionParts.find(p => p.partNumber === order.partNumber);
+        if (!prodPart) continue;
+        const bomItems = await this.getBomItems(prodPart.id);
+        for (const item of bomItems) {
+          if (item.stageNumber > order.currentStage) {
+            const subId = item.subcomponentId || item.subcomponents?.id;
+            if (!subId) continue;
+            if (!projectedNeeds[subId]) projectedNeeds[subId] = 0;
+            projectedNeeds[subId] += Number(item.quantityRequired);
+          }
+        }
+      }
+
+      // Determine low stock using projected availability
+      const lowStock = allSubs
+        .map(s => {
+          const onHand = Number(s.quantityOnHand);
+          const projected = projectedNeeds[s.id] || 0;
+          const available = onHand - projected;
+          return { ...s, projectedNeed: projected, projectedAvailable: available };
+        })
+        .filter(s => s.projectedAvailable <= Number(s.reorderPoint));
 
       // Count units per stage and detect late items
       const stageMap = stages.map(stage => {

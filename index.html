@@ -291,8 +291,10 @@
       }
 
       container.innerHTML = items.map(item => {
-        const pct = Number(item.reorderPoint) > 0 ? (Number(item.quantityOnHand) / Number(item.reorderPoint)) * 100 : 0;
-        const urgent = pct <= 50;
+        const onHand = Number(item.quantityOnHand);
+        const projected = item.projectedNeed || 0;
+        const available = item.projectedAvailable != null ? item.projectedAvailable : onHand;
+        const urgent = available <= 0;
 
         return `
           <div class="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
@@ -301,7 +303,7 @@
             </div>
             <div class="flex-1 min-w-0">
               <h4 class="font-medium text-white text-sm truncate">${item.partNumber}</h4>
-              <p class="text-xs text-gray-400">${item.quantityOnHand} ${item.unitOfMeasure} left &bull; Lead: ${item.leadTimeDays}d</p>
+              <p class="text-xs text-gray-400">On hand: ${onHand} ${item.unitOfMeasure}${projected > 0 ? ` &bull; In-production need: ${projected}` : ''} &bull; Available: <span class="${available < 0 ? 'text-red-400 font-semibold' : available === 0 ? 'text-red-400' : 'text-yellow-400'}">${available}</span></p>
             </div>
           </div>
         `;
