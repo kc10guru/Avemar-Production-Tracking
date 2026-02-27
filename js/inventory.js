@@ -1,13 +1,43 @@
 // Inventory page logic
 let allParts = [];
+let projectedNeeds = {};
+
+async function loadProjectedNeeds() {
+  projectedNeeds = {};
+  const [orders, productionParts] = await Promise.all([
+    db.getRepairOrders({ status: 'In Progress' }),
+    db.getProductionParts()
+  ]);
+  const active = orders.filter(o => o.status === 'In Progress');
+  for (const order of active) {
+    const prodPart = productionParts.find(p => p.partNumber === order.partNumber);
+    if (!prodPart) continue;
+    const bomItems = await db.getBomItems(prodPart.id);
+    for (const item of bomItems) {
+      if (item.stageNumber > order.currentStage) {
+        const subId = item.subcomponentId || item.subcomponents?.id;
+        if (!subId) continue;
+        if (!projectedNeeds[subId]) projectedNeeds[subId] = 0;
+        projectedNeeds[subId] += Number(item.quantityRequired);
+      }
+    }
+  }
+}
 
 async function loadInventory() {
   const category = document.getElementById('categoryFilter').value || undefined;
   allParts = await db.getSubcomponents(category ? { category } : {});
 
+  await loadProjectedNeeds();
+
+  allParts = allParts.map(p => {
+    const need = projectedNeeds[p.id] || 0;
+    return { ...p, projectedNeed: need, projectedAvailable: Number(p.quantityOnHand) - need };
+  });
+
   const lowOnly = document.getElementById('lowStockOnly').checked;
   if (lowOnly) {
-    allParts = allParts.filter(p => Number(p.quantityOnHand) <= Number(p.reorderPoint));
+    allParts = allParts.filter(p => p.projectedAvailable <= Number(p.reorderPoint));
   }
 
   renderTable();
@@ -19,7 +49,7 @@ function renderTable() {
   document.getElementById('inventoryCount').textContent = `${allParts.length} part${allParts.length !== 1 ? 's' : ''}`;
 
   if (allParts.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" class="py-12 text-center text-gray-400">
+    tbody.innerHTML = `<tr><td colspan="9" class="py-12 text-center text-gray-400">
       No parts found. <button onclick="showAddModal()" class="text-avemar-gold hover:underline">Add your first part</button>
     </td></tr>`;
     return;
@@ -28,16 +58,18 @@ function renderTable() {
   tbody.innerHTML = allParts.map(part => {
     const onHand = Number(part.quantityOnHand);
     const reorder = Number(part.reorderPoint);
+    const projected = part.projectedNeed || 0;
+    const available = part.projectedAvailable != null ? part.projectedAvailable : onHand;
     let statusClass = 'bg-emerald-500/20 text-emerald-400';
     let statusText = 'OK';
 
-    if (reorder > 0 && onHand <= 0) {
+    if (reorder > 0 && available <= 0) {
       statusClass = 'bg-red-500/20 text-red-400';
-      statusText = 'Out of Stock';
-    } else if (reorder > 0 && onHand <= reorder * 0.5) {
+      statusText = available < 0 ? 'Shortage' : 'Out of Stock';
+    } else if (reorder > 0 && available <= reorder * 0.5) {
       statusClass = 'bg-red-500/20 text-red-400';
       statusText = 'Critical';
-    } else if (reorder > 0 && onHand <= reorder) {
+    } else if (reorder > 0 && available <= reorder) {
       statusClass = 'bg-amber-500/20 text-amber-400';
       statusText = 'Low';
     }
@@ -52,7 +84,8 @@ function renderTable() {
         <td class="py-3 px-6 font-mono text-sm text-white">${part.partNumber}</td>
         <td class="py-3 px-6 text-gray-300 text-sm">${part.description}</td>
         <td class="py-3 px-6 text-sm ${categoryColors[part.category] || 'text-gray-400'}">${part.category}</td>
-        <td class="py-3 px-6 text-right font-semibold ${onHand <= reorder && reorder > 0 ? 'text-red-400' : 'text-white'}">${onHand}</td>
+        <td class="py-3 px-6 text-right font-semibold ${available <= reorder && reorder > 0 ? 'text-red-400' : 'text-white'}">${onHand}${projected > 0 ? ` <span class="text-xs text-gray-500">(${projected} committed)</span>` : ''}</td>
+        <td class="py-3 px-6 text-right ${available < 0 ? 'text-red-400 font-semibold' : 'text-gray-400'}">${available}</td>
         <td class="py-3 px-6 text-right text-gray-400">${reorder}</td>
         <td class="py-3 px-6 text-right text-gray-400">${part.leadTimeDays}d</td>
         <td class="py-3 px-6 text-center"><span class="px-2 py-1 rounded-full text-xs ${statusClass}">${statusText}</span></td>
