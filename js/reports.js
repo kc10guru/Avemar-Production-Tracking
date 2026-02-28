@@ -4,19 +4,20 @@ let allStages = [];
 let allSubcomponents = [];
 let allProductionParts = [];
 
-function showReport(reportId) {
-  document.getElementById('report-weekly').classList.add('hidden');
-  document.getElementById('report-inventory').classList.add('hidden');
-  document.getElementById('report-' + reportId).classList.remove('hidden');
+const REPORT_TABS = ['weekly', 'inventory', 'quarterly', 'annual'];
 
-  document.getElementById('tab-weekly').className =
-    'px-6 py-3 rounded-xl font-semibold transition text-sm ' +
-    (reportId === 'weekly' ? 'bg-avemar-gold text-black' : 'bg-white/5 border border-white/10 text-gray-300 hover:text-white');
-  document.getElementById('tab-inventory').className =
-    'px-6 py-3 rounded-xl font-semibold transition text-sm ' +
-    (reportId === 'inventory' ? 'bg-avemar-gold text-black' : 'bg-white/5 border border-white/10 text-gray-300 hover:text-white');
+function showReport(reportId) {
+  REPORT_TABS.forEach(id => {
+    document.getElementById('report-' + id).classList.toggle('hidden', id !== reportId);
+    const active = id === reportId;
+    document.getElementById('tab-' + id).className =
+      'px-6 py-3 rounded-xl font-semibold transition text-sm ' +
+      (active ? 'bg-avemar-gold text-black' : 'bg-white/5 border border-white/10 text-gray-300 hover:text-white');
+  });
 
   if (reportId === 'inventory') loadProjectedInventory();
+  if (reportId === 'quarterly') loadQuarterlyReport();
+  if (reportId === 'annual') loadAnnualReport();
 }
 
 function getWeekDates(weekStr) {
@@ -282,6 +283,324 @@ function renderProjectedInventory(rows) {
   `;
 }
 
+// ─── Chart theme defaults ────────────────────────────────
+const CHART_COLORS = {
+  received: 'rgba(14,165,233,0.85)',
+  receivedBg: 'rgba(14,165,233,0.25)',
+  delivered: 'rgba(16,185,129,0.85)',
+  deliveredBg: 'rgba(16,185,129,0.25)',
+  scrapped: 'rgba(239,68,68,0.7)',
+  cumulative: 'rgba(245,158,11,0.85)',
+  grid: 'rgba(255,255,255,0.06)',
+  tick: 'rgba(156,163,175,0.7)',
+};
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+let quarterlyChartInstance = null;
+let annualChartInstance = null;
+
+// ─── Helpers ─────────────────────────────────────────────
+function getOrdersForPeriod(startMonth, endMonth, year) {
+  const start = new Date(year, startMonth, 1);
+  const end = new Date(year, endMonth + 1, 0, 23, 59, 59, 999);
+
+  const received = allOrders.filter(o => {
+    if (!o.dateReceived) return false;
+    const d = new Date(o.dateReceived);
+    return d >= start && d <= end;
+  });
+  const delivered = allOrders.filter(o => {
+    if (!o.dateCompleted) return false;
+    const d = new Date(o.dateCompleted);
+    return d >= start && d <= end && o.status === 'Completed';
+  });
+  const scrapped = allOrders.filter(o => {
+    if (!o.dateCompleted) return false;
+    const d = new Date(o.dateCompleted);
+    return d >= start && d <= end && (o.status === 'Scrapped' || o.status === 'Cancelled');
+  });
+  return { received, delivered, scrapped, start, end };
+}
+
+function calcAvgDays(orders) {
+  const valid = orders.filter(o => o.dateReceived && o.dateCompleted);
+  if (valid.length === 0) return 0;
+  const total = valid.reduce((sum, o) => {
+    return sum + (new Date(o.dateCompleted) - new Date(o.dateReceived)) / 86400000;
+  }, 0);
+  return Math.round(total / valid.length);
+}
+
+function groupByMonth(orders, dateField, startMonth, monthCount) {
+  const counts = new Array(monthCount).fill(0);
+  orders.forEach(o => {
+    const d = new Date(o[dateField]);
+    const idx = d.getMonth() - startMonth;
+    if (idx >= 0 && idx < monthCount) counts[idx]++;
+  });
+  return counts;
+}
+
+function yoyText(current, previous) {
+  if (previous === 0 && current === 0) return '';
+  if (previous === 0) return '<span class="text-emerald-400">New</span>';
+  const delta = current - previous;
+  const pct = Math.round((delta / previous) * 100);
+  const arrow = delta >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+  const color = delta >= 0 ? 'text-emerald-400' : 'text-red-400';
+  return `<span class="${color}"><i class="fas ${arrow} mr-1"></i>${Math.abs(pct)}% vs prior year</span>`;
+}
+
+// ─── Quarterly Report ────────────────────────────────────
+function loadQuarterlyReport() {
+  const quarter = Number(document.getElementById('quarterSelector').value);
+  const year = Number(document.getElementById('quarterYearSelector').value);
+  const startMonth = (quarter - 1) * 3;
+  const months = [MONTH_NAMES[startMonth], MONTH_NAMES[startMonth+1], MONTH_NAMES[startMonth+2]];
+
+  const { received, delivered, scrapped, start, end } = getOrdersForPeriod(startMonth, startMonth + 2, year);
+
+  document.getElementById('quarterlyReportTitle').textContent = `Q${quarter} ${year} Production Report`;
+  const dateOpts = { month: 'short', day: 'numeric', year: 'numeric' };
+  document.getElementById('quarterlyReportDates').textContent =
+    `${start.toLocaleDateString('en-US', dateOpts)} \u2014 ${end.toLocaleDateString('en-US', dateOpts)}`;
+
+  document.getElementById('qtrReceived').textContent = received.length;
+  document.getElementById('qtrDelivered').textContent = delivered.length;
+  document.getElementById('qtrScrapped').textContent = scrapped.length;
+  document.getElementById('qtrAvgDays').textContent = calcAvgDays(delivered);
+
+  const recByMonth = groupByMonth(received, 'dateReceived', startMonth, 3);
+  const delByMonth = groupByMonth(delivered, 'dateCompleted', startMonth, 3);
+  const scrByMonth = groupByMonth(scrapped, 'dateCompleted', startMonth, 3);
+
+  // Chart
+  if (quarterlyChartInstance) quarterlyChartInstance.destroy();
+  const ctx = document.getElementById('quarterlyChart').getContext('2d');
+  quarterlyChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: months.map(m => `${m} ${year}`),
+      datasets: [
+        {
+          label: 'Received',
+          data: recByMonth,
+          backgroundColor: CHART_COLORS.receivedBg,
+          borderColor: CHART_COLORS.received,
+          borderWidth: 2, borderRadius: 6
+        },
+        {
+          label: 'Delivered',
+          data: delByMonth,
+          backgroundColor: CHART_COLORS.deliveredBg,
+          borderColor: CHART_COLORS.delivered,
+          borderWidth: 2, borderRadius: 6
+        },
+        {
+          label: 'Scrapped',
+          data: scrByMonth,
+          backgroundColor: 'rgba(239,68,68,0.2)',
+          borderColor: CHART_COLORS.scrapped,
+          borderWidth: 2, borderRadius: 6
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: CHART_COLORS.tick, font: { family: 'Outfit' } } }
+      },
+      scales: {
+        x: { ticks: { color: CHART_COLORS.tick }, grid: { color: CHART_COLORS.grid } },
+        y: { beginAtZero: true, ticks: { color: CHART_COLORS.tick, stepSize: 1 }, grid: { color: CHART_COLORS.grid } }
+      }
+    }
+  });
+
+  // Table
+  const container = document.getElementById('quarterlyTable');
+  container.innerHTML = `
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-white/10">
+            <th class="text-left py-2 text-xs text-gray-400 font-medium">Month</th>
+            <th class="text-right py-2 text-xs text-gray-400 font-medium">Received</th>
+            <th class="text-right py-2 text-xs text-gray-400 font-medium">Delivered</th>
+            <th class="text-right py-2 text-xs text-gray-400 font-medium">Scrapped</th>
+            <th class="text-right py-2 text-xs text-gray-400 font-medium">Net Throughput</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${months.map((m, i) => `
+            <tr class="border-b border-white/5">
+              <td class="py-3 text-white font-medium">${m} ${year}</td>
+              <td class="py-3 text-right text-avemar-sky">${recByMonth[i]}</td>
+              <td class="py-3 text-right text-emerald-400">${delByMonth[i]}</td>
+              <td class="py-3 text-right text-red-400">${scrByMonth[i]}</td>
+              <td class="py-3 text-right font-semibold text-white">${delByMonth[i] - recByMonth[i] >= 0 ? '+' : ''}${delByMonth[i] - recByMonth[i]}</td>
+            </tr>
+          `).join('')}
+          <tr class="border-t border-white/20">
+            <td class="py-3 text-white font-bold">Total</td>
+            <td class="py-3 text-right font-bold text-avemar-sky">${received.length}</td>
+            <td class="py-3 text-right font-bold text-emerald-400">${delivered.length}</td>
+            <td class="py-3 text-right font-bold text-red-400">${scrapped.length}</td>
+            <td class="py-3 text-right font-bold text-white">${delivered.length - received.length >= 0 ? '+' : ''}${delivered.length - received.length}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ─── Annual Report ───────────────────────────────────────
+function loadAnnualReport() {
+  const year = Number(document.getElementById('annualYearSelector').value);
+
+  const { received, delivered, scrapped } = getOrdersForPeriod(0, 11, year);
+  const prevData = getOrdersForPeriod(0, 11, year - 1);
+
+  document.getElementById('annualReportTitle').textContent = `${year} Annual Production Report`;
+  document.getElementById('annualReportDates').textContent = `January 1 \u2014 December 31, ${year}`;
+
+  document.getElementById('annReceived').textContent = received.length;
+  document.getElementById('annDelivered').textContent = delivered.length;
+  document.getElementById('annScrapped').textContent = scrapped.length;
+  document.getElementById('annAvgDays').textContent = calcAvgDays(delivered);
+
+  document.getElementById('annReceivedYoY').innerHTML = yoyText(received.length, prevData.received.length);
+  document.getElementById('annDeliveredYoY').innerHTML = yoyText(delivered.length, prevData.delivered.length);
+  document.getElementById('annScrappedYoY').innerHTML = yoyText(scrapped.length, prevData.scrapped.length);
+  const prevAvg = calcAvgDays(prevData.delivered);
+  const currAvg = calcAvgDays(delivered);
+  if (prevAvg > 0 && currAvg > 0) {
+    const delta = currAvg - prevAvg;
+    const color = delta <= 0 ? 'text-emerald-400' : 'text-red-400';
+    const arrow = delta <= 0 ? 'fa-arrow-down' : 'fa-arrow-up';
+    document.getElementById('annAvgDaysYoY').innerHTML =
+      `<span class="${color}"><i class="fas ${arrow} mr-1"></i>${Math.abs(delta)} days vs prior year</span>`;
+  } else {
+    document.getElementById('annAvgDaysYoY').innerHTML = '';
+  }
+
+  const recByMonth = groupByMonth(received, 'dateReceived', 0, 12);
+  const delByMonth = groupByMonth(delivered, 'dateCompleted', 0, 12);
+  const scrByMonth = groupByMonth(scrapped, 'dateCompleted', 0, 12);
+
+  // Cumulative delivered
+  const cumDelivered = [];
+  let cumSum = 0;
+  delByMonth.forEach(v => { cumSum += v; cumDelivered.push(cumSum); });
+
+  // Chart
+  if (annualChartInstance) annualChartInstance.destroy();
+  const ctx = document.getElementById('annualChart').getContext('2d');
+  annualChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: MONTH_NAMES.map(m => `${m}`),
+      datasets: [
+        {
+          type: 'bar', label: 'Received', data: recByMonth,
+          backgroundColor: CHART_COLORS.receivedBg, borderColor: CHART_COLORS.received,
+          borderWidth: 2, borderRadius: 6, yAxisID: 'y'
+        },
+        {
+          type: 'bar', label: 'Delivered', data: delByMonth,
+          backgroundColor: CHART_COLORS.deliveredBg, borderColor: CHART_COLORS.delivered,
+          borderWidth: 2, borderRadius: 6, yAxisID: 'y'
+        },
+        {
+          type: 'line', label: 'Cumulative Delivered', data: cumDelivered,
+          borderColor: CHART_COLORS.cumulative, backgroundColor: 'transparent',
+          borderWidth: 3, pointRadius: 4, pointBackgroundColor: CHART_COLORS.cumulative,
+          tension: 0.3, yAxisID: 'y1'
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: CHART_COLORS.tick, font: { family: 'Outfit' } } }
+      },
+      scales: {
+        x: { ticks: { color: CHART_COLORS.tick }, grid: { color: CHART_COLORS.grid } },
+        y: {
+          beginAtZero: true, position: 'left',
+          title: { display: true, text: 'Monthly', color: CHART_COLORS.tick },
+          ticks: { color: CHART_COLORS.tick, stepSize: 1 }, grid: { color: CHART_COLORS.grid }
+        },
+        y1: {
+          beginAtZero: true, position: 'right',
+          title: { display: true, text: 'Cumulative', color: CHART_COLORS.cumulative },
+          ticks: { color: CHART_COLORS.cumulative }, grid: { drawOnChartArea: false }
+        }
+      }
+    }
+  });
+
+  // Table
+  const container = document.getElementById('annualTable');
+  container.innerHTML = `
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-white/10">
+            <th class="text-left py-2 text-xs text-gray-400 font-medium">Month</th>
+            <th class="text-right py-2 text-xs text-gray-400 font-medium">Received</th>
+            <th class="text-right py-2 text-xs text-gray-400 font-medium">Delivered</th>
+            <th class="text-right py-2 text-xs text-gray-400 font-medium">Scrapped</th>
+            <th class="text-right py-2 text-xs text-gray-400 font-medium">Cumulative Delivered</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${MONTH_NAMES.map((m, i) => `
+            <tr class="border-b border-white/5">
+              <td class="py-3 text-white font-medium">${m}</td>
+              <td class="py-3 text-right text-avemar-sky">${recByMonth[i]}</td>
+              <td class="py-3 text-right text-emerald-400">${delByMonth[i]}</td>
+              <td class="py-3 text-right text-red-400">${scrByMonth[i]}</td>
+              <td class="py-3 text-right font-semibold text-avemar-gold">${cumDelivered[i]}</td>
+            </tr>
+          `).join('')}
+          <tr class="border-t border-white/20">
+            <td class="py-3 text-white font-bold">Total</td>
+            <td class="py-3 text-right font-bold text-avemar-sky">${received.length}</td>
+            <td class="py-3 text-right font-bold text-emerald-400">${delivered.length}</td>
+            <td class="py-3 text-right font-bold text-red-400">${scrapped.length}</td>
+            <td class="py-3 text-right font-bold text-avemar-gold">${cumSum}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ─── Populate year/quarter selectors ─────────────────────
+function populateSelectors() {
+  const years = new Set();
+  allOrders.forEach(o => {
+    if (o.dateReceived) years.add(new Date(o.dateReceived).getFullYear());
+    if (o.dateCompleted) years.add(new Date(o.dateCompleted).getFullYear());
+  });
+  if (years.size === 0) years.add(new Date().getFullYear());
+
+  const sortedYears = [...years].sort((a, b) => b - a);
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentQuarter = Math.ceil((now.getMonth() + 1) / 3);
+
+  ['quarterYearSelector', 'annualYearSelector'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = sortedYears.map(y =>
+      `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`
+    ).join('');
+  });
+
+  document.getElementById('quarterSelector').value = String(currentQuarter);
+}
+
 // ─── Initialization ──────────────────────────────────────
 async function initReports() {
   [allOrders, allStages, allSubcomponents, allProductionParts] = await Promise.all([
@@ -291,13 +610,13 @@ async function initReports() {
     db.getProductionParts()
   ]);
 
-  // Also load completed/archived orders for the delivered count
-  const { data: completedData } = await window.supabaseClient
+  // Also load completed/scrapped/archived orders
+  const { data: historicData } = await window.supabaseClient
     .from('repair_orders').select('*')
-    .eq('status', 'Completed')
+    .in('status', ['Completed', 'Scrapped', 'Cancelled'])
     .order('date_completed', { ascending: false });
-  if (completedData) {
-    const completedOrders = completedData.map(o => {
+  if (historicData) {
+    const historicOrders = historicData.map(o => {
       const result = {};
       Object.keys(o).forEach(key => {
         const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
@@ -305,9 +624,8 @@ async function initReports() {
       });
       return result;
     });
-    // Merge completed orders that aren't already in allOrders
     const existingIds = new Set(allOrders.map(o => o.id));
-    completedOrders.forEach(o => {
+    historicOrders.forEach(o => {
       if (!existingIds.has(o.id)) allOrders.push(o);
     });
   }
@@ -320,6 +638,7 @@ async function initReports() {
   const weekNum = Math.ceil((dayOfYear + startOfYear.getDay()) / 7);
   document.getElementById('weekSelector').value = `${year}-W${String(weekNum).padStart(2, '0')}`;
 
+  populateSelectors();
   await loadWeeklyReport();
 }
 
