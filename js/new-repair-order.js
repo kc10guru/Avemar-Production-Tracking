@@ -41,6 +41,7 @@ async function handleSubmit(event) {
       contractType: document.getElementById('contractType').value,
       shippingAddress: document.getElementById('shippingAddress').value.trim() || null,
       purchaseOrder: document.getElementById('purchaseOrder').value.trim() || null,
+      invoiceNumber: document.getElementById('invoiceNumber').value.trim() || null,
       contactName: document.getElementById('contactName').value.trim() || null,
       contactEmail: document.getElementById('contactEmail').value.trim() || null,
       contactPhone: document.getElementById('contactPhone').value.trim() || null,

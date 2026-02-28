@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS repair_orders (
   expected_completion TIMESTAMPTZ,
   date_completed TIMESTAMPTZ,
   status TEXT DEFAULT 'In Progress',
+  invoice_number TEXT,
   notes TEXT,
   is_archived BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT now(),

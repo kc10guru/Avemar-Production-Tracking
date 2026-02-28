@@ -94,6 +94,7 @@ function renderOrderDetails() {
     { label: 'Customer', value: order.customerName },
     { label: 'Contract Type', value: order.contractType },
     { label: 'Purchase Order', value: order.purchaseOrder || '--' },
+    { label: 'Invoice Number', value: order.invoiceNumber || '--' },
     { label: 'Aircraft', value: [order.aircraftTailNumber, order.aircraftType].filter(Boolean).join(' / ') || '--' },
     { label: 'Shipping Address', value: order.shippingAddress || '--' },
     { label: 'Contact', value: [order.contactName, order.contactEmail, order.contactPhone].filter(Boolean).join(' | ') || '--' },
