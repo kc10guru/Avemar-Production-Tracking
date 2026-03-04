@@ -133,7 +133,12 @@
       <!-- Order Details -->
       <div class="lg:col-span-2 space-y-6">
         <div class="stat-card rounded-2xl p-6">
-          <h3 class="text-lg font-semibold mb-4"><i class="fas fa-info-circle text-avemar-sky mr-2"></i>Order Details</h3>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold"><i class="fas fa-info-circle text-avemar-sky mr-2"></i>Order Details</h3>
+            <button onclick="showEditModal()" id="editOrderBtn" class="bg-white/5 border border-white/10 px-4 py-2 rounded-lg text-gray-300 hover:text-white transition text-sm hidden">
+              <i class="fas fa-pen mr-2"></i>Edit
+            </button>
+          </div>
           <div class="grid grid-cols-2 gap-4 text-sm" id="orderDetails">
             <div class="text-gray-400 text-center py-8 col-span-2"><i class="fas fa-spinner fa-spin mr-2"></i>Loading...</div>
           </div>
@@ -216,6 +221,108 @@
         <button onclick="hideAdvanceModal()" class="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
         <button onclick="advanceStage()" id="confirmAdvanceBtn" class="bg-avemar-gold hover:bg-amber-600 text-black px-6 py-2 rounded-lg font-semibold transition">
           <i class="fas fa-check mr-2"></i>Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Order Modal -->
+  <div id="editModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div class="stat-card rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <h3 class="text-xl font-bold mb-6"><i class="fas fa-pen text-avemar-sky mr-2"></i>Edit Repair Order</h3>
+
+      <div class="space-y-4">
+        <div id="partNumberWarning" class="hidden p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl mb-4">
+          <div class="flex items-start gap-3">
+            <i class="fas fa-exclamation-triangle text-amber-400 mt-0.5"></i>
+            <div>
+              <p class="text-amber-300 text-sm font-medium">Part Number Change Warning</p>
+              <p class="text-amber-300/70 text-xs mt-1">Changing the part number will reverse all previously issued BOM parts, restore their inventory, then re-issue the correct parts from the new BOM for all completed stages.</p>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Part Number <span class="text-red-400">*</span></label>
+            <select id="editPartNumber" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-avemar-gold">
+              <option value="">Select part number...</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Customer Name <span class="text-red-400">*</span></label>
+            <input type="text" id="editCustomerName"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Contract Type</label>
+            <select id="editContractType" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-avemar-gold">
+              <option value="Commercial Sales">Commercial Sales</option>
+              <option value="C12">C12</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Serial Number <span class="text-red-400">*</span></label>
+            <input type="text" id="editSerialNumber"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Purchase Order</label>
+            <input type="text" id="editPurchaseOrder"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Invoice Number</label>
+            <input type="text" id="editInvoiceNumber"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Shipping Address</label>
+            <input type="text" id="editShippingAddress"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Aircraft Tail Number</label>
+            <input type="text" id="editAircraftTailNumber"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Aircraft Type</label>
+            <input type="text" id="editAircraftType"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Contact Name</label>
+            <input type="text" id="editContactName"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Contact Email</label>
+            <input type="email" id="editContactEmail"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Contact Phone</label>
+            <input type="tel" id="editContactPhone"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Expected Completion</label>
+            <input type="date" id="editExpectedCompletion"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-avemar-gold">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-400 mb-1">Notes</label>
+          <textarea id="editNotes" rows="3"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold resize-none"
+            placeholder="Additional notes..."></textarea>
+        </div>
+      </div>
+
+      <div class="flex gap-3 justify-end mt-6">
+        <button onclick="hideEditModal()" class="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
+        <button onclick="saveOrderEdits()" id="saveEditBtn" class="bg-avemar-gold hover:bg-amber-600 text-black px-6 py-2 rounded-lg font-semibold transition">
+          <i class="fas fa-save mr-2"></i>Save Changes
         </button>
       </div>
     </div>

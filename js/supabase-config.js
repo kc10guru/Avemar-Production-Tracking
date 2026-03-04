@@ -324,6 +324,61 @@
       return true;
     },
 
+    async reverseAllPartsForOrder(repairOrderId) {
+      const { data, error } = await window.supabaseClient
+        .from('parts_issuance').select('*')
+        .eq('repair_order_id', repairOrderId);
+      if (error) { console.error('Error fetching parts to reverse:', error); return false; }
+      if (!data || data.length === 0) return true;
+
+      for (const record of data) {
+        const sub = await this.getSubcomponent(record.subcomponent_id);
+        if (sub) {
+          const restoredQty = Number(sub.quantityOnHand) + Number(record.quantity_issued);
+          await this.updateSubcomponent(record.subcomponent_id, { quantityOnHand: restoredQty });
+        }
+        await window.supabaseClient.from('parts_issuance').delete().eq('id', record.id);
+      }
+      return true;
+    },
+
+    async changePartNumber(repairOrderId, newPartNumber, currentStage) {
+      // 1. Reverse all previously issued parts (restore inventory)
+      const reversed = await this.reverseAllPartsForOrder(repairOrderId);
+      if (!reversed) return false;
+
+      // 2. Find the new production part and its BOM
+      const prodParts = await this.getProductionParts();
+      const newProdPart = prodParts.find(p => p.partNumber === newPartNumber);
+      if (!newProdPart) {
+        console.error('New part number not found in production parts');
+        return false;
+      }
+
+      // 3. Re-issue BOM parts for all stages already completed (< currentStage)
+      const userId = (await window.supabaseClient.auth.getUser()).data?.user?.id || null;
+      const allBom = await this.getBomItems(newProdPart.id);
+
+      for (const item of allBom) {
+        if (item.stageNumber < currentStage) {
+          const subId = item.subcomponentId || item.subcomponents?.id;
+          if (!subId) continue;
+          await this.issuePart({
+            repairOrderId: repairOrderId,
+            subcomponentId: subId,
+            bomItemId: item.id,
+            stageNumber: item.stageNumber,
+            quantityIssued: Number(item.quantityRequired),
+            issuedBy: userId
+          });
+        }
+      }
+
+      // 4. Update the repair order's part number
+      const updated = await this.updateRepairOrder(repairOrderId, { partNumber: newPartNumber });
+      return !!updated;
+    },
+
     async deleteStageEntry(id) {
       const { error } = await window.supabaseClient
         .from('stage_history').delete().eq('id', id);

@@ -142,6 +142,12 @@ function renderOrderDetails() {
         <p class="text-gray-300 mt-1">${order.notes}</p>
       </div>`;
   }
+
+  if (order.status !== 'Completed' && order.status !== 'Cancelled') {
+    document.getElementById('editOrderBtn').classList.remove('hidden');
+  } else {
+    document.getElementById('editOrderBtn').classList.add('hidden');
+  }
 }
 
 function renderStageTimeline() {
@@ -444,6 +450,7 @@ async function loadBomPartsForStage(stageNumber) {
   const bomItems = await db.getBomForStage(prodPart.id, stageNumber);
   if (bomItems.length === 0) {
     section.classList.add('hidden');
+    list.innerHTML = '';
     return;
   }
 
@@ -548,6 +555,119 @@ async function advanceStage() {
 
   btn.disabled = false;
   btn.innerHTML = '<i class="fas fa-check mr-2"></i>Confirm';
+}
+
+// ─── Edit Order ─────────────────────────────────────────
+function showEditModal() {
+  const partSelect = document.getElementById('editPartNumber');
+  partSelect.innerHTML = productionParts.map(p =>
+    `<option value="${p.partNumber}" ${p.partNumber === order.partNumber ? 'selected' : ''}>${p.partNumber}${p.description ? ' — ' + p.description : ''}</option>`
+  ).join('');
+
+  partSelect.onchange = function() {
+    const warning = document.getElementById('partNumberWarning');
+    if (this.value !== order.partNumber) {
+      warning.classList.remove('hidden');
+    } else {
+      warning.classList.add('hidden');
+    }
+  };
+  document.getElementById('partNumberWarning').classList.add('hidden');
+
+  document.getElementById('editCustomerName').value = order.customerName || '';
+  document.getElementById('editContractType').value = order.contractType || 'Commercial Sales';
+  document.getElementById('editSerialNumber').value = order.serialNumber || '';
+  document.getElementById('editPurchaseOrder').value = order.purchaseOrder || '';
+  document.getElementById('editInvoiceNumber').value = order.invoiceNumber || '';
+  document.getElementById('editShippingAddress').value = order.shippingAddress || '';
+  document.getElementById('editAircraftTailNumber').value = order.aircraftTailNumber || '';
+  document.getElementById('editAircraftType').value = order.aircraftType || '';
+  document.getElementById('editContactName').value = order.contactName || '';
+  document.getElementById('editContactEmail').value = order.contactEmail || '';
+  document.getElementById('editContactPhone').value = order.contactPhone || '';
+  document.getElementById('editExpectedCompletion').value = order.expectedCompletion ? order.expectedCompletion.split('T')[0] : '';
+  document.getElementById('editNotes').value = order.notes || '';
+
+  document.getElementById('editModal').classList.remove('hidden');
+}
+
+function hideEditModal() {
+  document.getElementById('editModal').classList.add('hidden');
+}
+
+async function saveOrderEdits() {
+  const customerName = document.getElementById('editCustomerName').value.trim();
+  const serialNumber = document.getElementById('editSerialNumber').value.trim();
+  const newPartNumber = document.getElementById('editPartNumber').value;
+
+  if (!customerName) { alert('Customer name is required.'); return; }
+  if (!serialNumber) { alert('Serial number is required.'); return; }
+  if (!newPartNumber) { alert('Part number is required.'); return; }
+
+  const partNumberChanged = newPartNumber !== order.partNumber;
+
+  if (partNumberChanged) {
+    const confirmed = confirm(
+      `You are changing the part number from "${order.partNumber}" to "${newPartNumber}".\n\n` +
+      `This will:\n` +
+      `• Reverse all previously issued BOM parts\n` +
+      `• Restore inventory for the old parts\n` +
+      `• Issue the correct BOM parts from the new part number for completed stages\n` +
+      `• Update projected inventory\n\n` +
+      `Continue?`
+    );
+    if (!confirmed) return;
+  }
+
+  const btn = document.getElementById('saveEditBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+
+  try {
+    if (partNumberChanged) {
+      const swapSuccess = await db.changePartNumber(order.id, newPartNumber, order.currentStage);
+      if (!swapSuccess) {
+        alert('Failed to swap part number BOM. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save mr-2"></i>Save Changes';
+        return;
+      }
+    }
+
+    const updates = {
+      customerName: customerName,
+      contractType: document.getElementById('editContractType').value,
+      serialNumber: serialNumber,
+      purchaseOrder: document.getElementById('editPurchaseOrder').value.trim() || null,
+      invoiceNumber: document.getElementById('editInvoiceNumber').value.trim() || null,
+      shippingAddress: document.getElementById('editShippingAddress').value.trim() || null,
+      aircraftTailNumber: document.getElementById('editAircraftTailNumber').value.trim() || null,
+      aircraftType: document.getElementById('editAircraftType').value.trim() || null,
+      contactName: document.getElementById('editContactName').value.trim() || null,
+      contactEmail: document.getElementById('editContactEmail').value.trim() || null,
+      contactPhone: document.getElementById('editContactPhone').value.trim() || null,
+      expectedCompletion: document.getElementById('editExpectedCompletion').value || null,
+      notes: document.getElementById('editNotes').value.trim() || null
+    };
+
+    if (!partNumberChanged) {
+      updates.partNumber = newPartNumber;
+    }
+
+    const success = await db.updateRepairOrder(order.id, updates);
+    if (success) {
+      hideEditModal();
+      await loadPage();
+    } else {
+      alert('Failed to save changes. Please try again.');
+    }
+  } catch (error) {
+    console.error('Error saving order edits:', error);
+    alert('Failed to save changes. Please try again.');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-save mr-2"></i>Save Changes';
 }
 
 // ─── Hold / Resume ──────────────────────────────────────
