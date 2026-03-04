@@ -331,6 +331,79 @@
       return true;
     },
 
+    // ─── Hold / Resume ───────────────────────────────────────
+    async holdRepairOrder(id, stageNumber, stageName, reason) {
+      const userId = (await window.supabaseClient.auth.getUser()).data?.user?.id || null;
+      const now = new Date().toISOString();
+
+      const { error: holdError } = await window.supabaseClient
+        .from('hold_history').insert({
+          repair_order_id: id,
+          stage_number: stageNumber,
+          stage_name: stageName,
+          hold_reason: reason,
+          held_by: userId,
+          held_at: now
+        });
+      if (holdError) { console.error('Error creating hold entry:', holdError); return false; }
+
+      const { error } = await window.supabaseClient
+        .from('repair_orders').update({
+          is_on_hold: true,
+          hold_reason: reason,
+          hold_stage: stageNumber,
+          hold_started_at: now,
+          status: 'On Hold',
+          updated_at: now
+        }).eq('id', id);
+      if (error) { console.error('Error putting order on hold:', error); return false; }
+      return true;
+    },
+
+    async resumeRepairOrder(id) {
+      const userId = (await window.supabaseClient.auth.getUser()).data?.user?.id || null;
+      const now = new Date().toISOString();
+
+      const { data: openHold } = await window.supabaseClient
+        .from('hold_history').select('*')
+        .eq('repair_order_id', id)
+        .is('resumed_at', null)
+        .order('held_at', { ascending: false })
+        .limit(1);
+
+      if (openHold && openHold.length > 0) {
+        const heldAt = new Date(openHold[0].held_at);
+        const hours = Math.round((new Date() - heldAt) / (1000 * 60 * 60) * 10) / 10;
+        await window.supabaseClient
+          .from('hold_history').update({
+            resumed_by: userId,
+            resumed_at: now,
+            hold_duration_hours: hours
+          }).eq('id', openHold[0].id);
+      }
+
+      const { error } = await window.supabaseClient
+        .from('repair_orders').update({
+          is_on_hold: false,
+          hold_reason: null,
+          hold_stage: null,
+          hold_started_at: null,
+          status: 'In Progress',
+          updated_at: now
+        }).eq('id', id);
+      if (error) { console.error('Error resuming order:', error); return false; }
+      return true;
+    },
+
+    async getHoldHistory(repairOrderId) {
+      const { data, error } = await window.supabaseClient
+        .from('hold_history').select('*')
+        .eq('repair_order_id', repairOrderId)
+        .order('held_at', { ascending: false });
+      if (error) { console.error('Error fetching hold history:', error); return []; }
+      return toCamelCase(data);
+    },
+
     // ─── Dashboard Helpers ──────────────────────────────────
     async getDashboardStats() {
       const [orders, stages, allSubs, productionParts] = await Promise.all([
@@ -376,18 +449,21 @@
         })
         .filter(s => s.projectedAvailable <= Number(s.reorderPoint));
 
-      // Count units per stage and detect late items
+      // Count units per stage, detect late and on-hold items
       const stageMap = stages.map(stage => {
         const unitsInStage = active.filter(o => o.currentStage === stage.stageNumber);
+        const holdUnitsInStage = onHold.filter(o => o.currentStage === stage.stageNumber);
         const lateUnits = unitsInStage.filter(o => {
-          const history = null; // will need to be enriched
+          const history = null;
           return false;
         });
         return {
           ...stage,
           unitCount: unitsInStage.length,
           lateCount: 0,
-          units: unitsInStage
+          holdCount: holdUnitsInStage.length,
+          holdUnits: holdUnitsInStage,
+          units: [...unitsInStage, ...holdUnitsInStage]
         };
       });
 

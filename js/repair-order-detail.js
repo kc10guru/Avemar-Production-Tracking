@@ -41,11 +41,32 @@ function renderHeader() {
   const stageName = stages.find(s => s.stageNumber === order.currentStage)?.stageName || '';
   document.getElementById('roSubtitle').textContent = `${order.customerName} — Stage ${order.currentStage}: ${stageName}`;
 
-  if (order.status === 'In Progress' && order.currentStage <= 15) {
-    document.getElementById('advanceBtn').classList.remove('hidden');
-  }
-  if (order.status === 'In Progress' && order.currentStage > 1) {
-    document.getElementById('revertBtn').classList.remove('hidden');
+  const isOnHold = order.isOnHold || order.status === 'On Hold';
+
+  if (isOnHold) {
+    document.getElementById('resumeBtn').classList.remove('hidden');
+    document.getElementById('holdBtn').classList.add('hidden');
+    document.getElementById('advanceBtn').classList.add('hidden');
+    document.getElementById('revertBtn').classList.add('hidden');
+
+    const banner = document.getElementById('holdBanner');
+    banner.classList.remove('hidden');
+    document.getElementById('holdBannerReason').textContent = `Reason: ${order.holdReason || 'No reason provided'}`;
+    if (order.holdStartedAt) {
+      const hrs = Math.round((new Date() - new Date(order.holdStartedAt)) / (1000 * 60 * 60) * 10) / 10;
+      document.getElementById('holdBannerTime').textContent = `On hold at Stage ${order.holdStage || order.currentStage} for ${hrs} hours`;
+    }
+  } else {
+    document.getElementById('holdBanner').classList.add('hidden');
+    document.getElementById('resumeBtn').classList.add('hidden');
+
+    if (order.status === 'In Progress' && order.currentStage <= 15) {
+      document.getElementById('advanceBtn').classList.remove('hidden');
+      document.getElementById('holdBtn').classList.remove('hidden');
+    }
+    if (order.status === 'In Progress' && order.currentStage > 1) {
+      document.getElementById('revertBtn').classList.remove('hidden');
+    }
   }
 }
 
@@ -53,15 +74,19 @@ function renderStageProgress() {
   const container = document.getElementById('stageProgress');
   const html = [];
 
+  const isOnHold = order.isOnHold || order.status === 'On Hold';
+
   stages.forEach((stage, idx) => {
     let dotClass = 'pending';
     if (stage.stageNumber < order.currentStage) dotClass = 'completed';
-    else if (stage.stageNumber === order.currentStage) dotClass = 'current';
+    else if (stage.stageNumber === order.currentStage) dotClass = isOnHold ? 'on-hold' : 'current';
+
+    const labelColor = dotClass === 'on-hold' ? 'text-red-400' : dotClass === 'current' ? 'text-avemar-sky' : dotClass === 'completed' ? 'text-emerald-400' : 'text-gray-600';
 
     html.push(`
-      <div class="flex flex-col items-center flex-shrink-0" title="${stage.stageName}">
-        <div class="stage-dot ${dotClass}">${stage.stageNumber}</div>
-        <span class="text-xs mt-1 ${dotClass === 'current' ? 'text-avemar-sky' : dotClass === 'completed' ? 'text-emerald-400' : 'text-gray-600'} max-w-[70px] text-center leading-tight">
+      <div class="flex flex-col items-center flex-shrink-0" title="${stage.stageName}${dotClass === 'on-hold' ? ' (ON HOLD)' : ''}">
+        <div class="stage-dot ${dotClass}">${dotClass === 'on-hold' ? '<i class="fas fa-hand text-xs"></i>' : stage.stageNumber}</div>
+        <span class="text-xs mt-1 ${labelColor} max-w-[70px] text-center leading-tight">
           ${stage.stageName}
         </span>
       </div>
@@ -523,6 +548,78 @@ async function advanceStage() {
 
   btn.disabled = false;
   btn.innerHTML = '<i class="fas fa-check mr-2"></i>Confirm';
+}
+
+// ─── Hold / Resume ──────────────────────────────────────
+function showHoldModal() {
+  const currentStageDef = stages.find(s => s.stageNumber === order.currentStage);
+  document.getElementById('holdDescription').textContent =
+    `Placing "${order.roNumber}" on hold at Stage ${order.currentStage}: ${currentStageDef?.stageName || ''}`;
+  document.getElementById('holdReason').value = '';
+  document.getElementById('holdModal').classList.remove('hidden');
+}
+
+function hideHoldModal() {
+  document.getElementById('holdModal').classList.add('hidden');
+  document.getElementById('holdReason').value = '';
+}
+
+async function confirmHold() {
+  const reason = document.getElementById('holdReason').value.trim();
+  if (!reason) {
+    alert('Please enter a reason for the hold.');
+    return;
+  }
+
+  const btn = document.getElementById('confirmHoldBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+
+  try {
+    const currentStageDef = stages.find(s => s.stageNumber === order.currentStage);
+    const success = await db.holdRepairOrder(
+      order.id,
+      order.currentStage,
+      currentStageDef?.stageName || `Stage ${order.currentStage}`,
+      reason
+    );
+
+    if (success) {
+      hideHoldModal();
+      await loadPage();
+    } else {
+      alert('Failed to put order on hold. Please try again.');
+    }
+  } catch (error) {
+    console.error('Error holding order:', error);
+    alert('Failed to put order on hold. Please try again.');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-hand mr-2"></i>Confirm Hold';
+}
+
+async function resumeOrder() {
+  if (!confirm(`Resume "${order.roNumber}" and return it to active production?`)) return;
+
+  const btn = document.getElementById('resumeBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Resuming...';
+
+  try {
+    const success = await db.resumeRepairOrder(order.id);
+    if (success) {
+      await loadPage();
+    } else {
+      alert('Failed to resume order. Please try again.');
+    }
+  } catch (error) {
+    console.error('Error resuming order:', error);
+    alert('Failed to resume order. Please try again.');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-play mr-2"></i>Resume';
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

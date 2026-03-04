@@ -32,6 +32,7 @@
     .stat-card { background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255, 255, 255, 0.1); }
     .stage-card { background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255, 255, 255, 0.1); }
     .stage-card.has-late { border-color: rgba(239, 68, 68, 0.5); }
+    .stage-card.has-hold { border-color: rgba(239, 68, 68, 0.5); box-shadow: 0 0 12px rgba(239, 68, 68, 0.15); }
     .stage-card.has-units { border-color: rgba(14, 165, 233, 0.3); }
     select { background-color: #1e293b; color: #f1f5f9; }
     select option { background-color: #1e293b; color: #f1f5f9; }
@@ -217,22 +218,38 @@
       }
 
       container.innerHTML = stages.map((stage) => {
+        const totalActive = stage.unitCount;
+        const holdCount = stage.holdCount || 0;
+
         let borderClass = '';
-        if (stage.lateCount > 0) borderClass = 'has-late';
-        else if (stage.unitCount > 0) borderClass = 'has-units';
+        if (holdCount > 0) borderClass = 'has-hold';
+        else if (stage.lateCount > 0) borderClass = 'has-late';
+        else if (totalActive > 0) borderClass = 'has-units';
+
+        const holdIndicator = holdCount > 0
+          ? `<span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>`
+          : (stage.lateCount > 0 ? '<span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>' : '');
+
+        let statusLine = 'units';
+        if (holdCount > 0) {
+          statusLine = `<span class="text-red-400"><i class="fas fa-hand text-xs mr-1"></i>${holdCount} on hold</span>`;
+          if (totalActive > 0) statusLine += ` <span class="text-gray-500">&bull; ${totalActive} active</span>`;
+        } else if (stage.lateCount > 0) {
+          statusLine = `<span class="text-red-400">${stage.lateCount} late</span>`;
+        }
+
+        const displayCount = totalActive + holdCount;
 
         return `
           <div class="stage-card ${borderClass} rounded-xl p-4 cursor-pointer card-hover"
                onclick="window.location.href='repair-orders.html?stage=${stage.stageNumber}'">
             <div class="flex items-center justify-between mb-2">
               <span class="text-xs text-gray-500 font-medium">STAGE ${stage.stageNumber}</span>
-              ${stage.lateCount > 0 ? '<span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>' : ''}
+              ${holdIndicator}
             </div>
             <h4 class="text-sm font-semibold text-white mb-2 leading-tight">${stage.stageName}</h4>
-            <div class="text-2xl font-bold ${stage.unitCount > 0 ? 'text-avemar-sky' : 'text-gray-600'}">${stage.unitCount}</div>
-            <p class="text-xs text-gray-500 mt-1">
-              ${stage.lateCount > 0 ? `<span class="text-red-400">${stage.lateCount} late</span>` : 'units'}
-            </p>
+            <div class="text-2xl font-bold ${holdCount > 0 ? 'text-red-400' : displayCount > 0 ? 'text-avemar-sky' : 'text-gray-600'}">${displayCount}</div>
+            <p class="text-xs text-gray-500 mt-1">${statusLine}</p>
           </div>
         `;
       }).join('');

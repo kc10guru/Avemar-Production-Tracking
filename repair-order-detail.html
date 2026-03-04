@@ -31,7 +31,9 @@
     .stage-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
     .stage-dot.completed { background: #10b981; color: white; }
     .stage-dot.current { background: #0ea5e9; color: white; box-shadow: 0 0 16px rgba(14, 165, 233, 0.5); }
+    .stage-dot.on-hold { background: #dc2626; color: white; box-shadow: 0 0 16px rgba(220, 38, 38, 0.5); animation: pulse 2s infinite; }
     .stage-dot.pending { background: rgba(255, 255, 255, 0.1); color: #6b7280; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
     .stage-connector { height: 3px; flex: 1; min-width: 12px; }
     .stage-connector.completed { background: #10b981; }
     .stage-connector.pending { background: rgba(255, 255, 255, 0.1); }
@@ -91,9 +93,29 @@
         <button onclick="confirmRevertStage()" id="revertBtn" class="bg-white/5 border border-white/10 px-4 py-2 rounded-lg text-gray-300 hover:text-white transition text-sm hidden">
           <i class="fas fa-arrow-left mr-2"></i>Go Back
         </button>
+        <button onclick="showHoldModal()" id="holdBtn" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg font-semibold transition text-sm hidden">
+          <i class="fas fa-hand mr-2"></i>Hold
+        </button>
+        <button onclick="resumeOrder()" id="resumeBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-semibold transition text-sm hidden">
+          <i class="fas fa-play mr-2"></i>Resume
+        </button>
         <button onclick="showAdvanceModal()" id="advanceBtn" class="bg-avemar-gold hover:bg-amber-600 text-black px-6 py-2 rounded-lg font-semibold transition text-sm hidden">
           <i class="fas fa-arrow-right mr-2"></i>Advance Stage
         </button>
+      </div>
+    </div>
+
+    <!-- On Hold Banner -->
+    <div id="holdBanner" class="hidden mb-6 bg-red-600/20 border border-red-500/40 rounded-2xl p-5">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-red-500/30 rounded-xl flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-hand text-red-400 text-xl"></i>
+        </div>
+        <div class="flex-1">
+          <h4 class="text-red-400 font-bold text-lg">ORDER ON HOLD</h4>
+          <p class="text-red-300/80 text-sm mt-1" id="holdBannerReason"></p>
+          <p class="text-red-300/60 text-xs mt-1" id="holdBannerTime"></p>
+        </div>
       </div>
     </div>
 
@@ -194,6 +216,31 @@
         <button onclick="hideAdvanceModal()" class="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
         <button onclick="advanceStage()" id="confirmAdvanceBtn" class="bg-avemar-gold hover:bg-amber-600 text-black px-6 py-2 rounded-lg font-semibold transition">
           <i class="fas fa-check mr-2"></i>Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hold Modal -->
+  <div id="holdModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div class="stat-card rounded-2xl p-8 max-w-lg w-full mx-4">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
+          <i class="fas fa-hand text-red-400 text-lg"></i>
+        </div>
+        <h3 class="text-xl font-bold">Place Order On Hold</h3>
+      </div>
+      <p class="text-gray-400 mb-6" id="holdDescription"></p>
+      <div class="mb-6">
+        <label class="block text-sm text-gray-400 mb-2">Reason for Hold <span class="text-red-400">*</span></label>
+        <textarea id="holdReason" rows="3"
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-red-400 resize-none"
+          placeholder="Enter the reason for the work stoppage..."></textarea>
+      </div>
+      <div class="flex gap-3 justify-end">
+        <button onclick="hideHoldModal()" class="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
+        <button onclick="confirmHold()" id="confirmHoldBtn" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+          <i class="fas fa-hand mr-2"></i>Confirm Hold
         </button>
       </div>
     </div>
