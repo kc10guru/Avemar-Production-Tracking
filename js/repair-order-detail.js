@@ -863,6 +863,44 @@ async function resumeOrder() {
   btn.innerHTML = '<i class="fas fa-play mr-2"></i>Resume';
 }
 
+// ─── Delete Order ───────────────────────────────────────
+async function confirmDeleteOrder() {
+  const confirmed = confirm(
+    `DELETE repair order "${order.roNumber}"?\n\n` +
+    `This will permanently remove:\n` +
+    `• The repair order and all its data\n` +
+    `• All stage history\n` +
+    `• All hold history\n` +
+    `• All uploaded documents\n` +
+    `• All issued parts will be returned to inventory\n\n` +
+    `This cannot be undone.`
+  );
+  if (!confirmed) return;
+
+  const doubleConfirm = confirm(`Are you sure? Type OK to permanently delete ${order.roNumber}.`);
+  if (!doubleConfirm) return;
+
+  const btn = document.getElementById('deleteBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Deleting...';
+
+  try {
+    const success = await db.deleteRepairOrder(order.id);
+    if (success) {
+      alert(`Repair order ${order.roNumber} has been deleted.`);
+      window.location.href = 'repair-orders.html';
+    } else {
+      alert('Failed to delete repair order. Please try again.');
+    }
+  } catch (error) {
+    console.error('Error deleting order:', error);
+    alert('Failed to delete repair order. Please try again.');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-trash mr-2"></i>Delete';
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   await initializeAuth();
   setupDocumentUpload();

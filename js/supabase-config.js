@@ -139,6 +139,30 @@
       return toCamelCase(data[0]);
     },
 
+    async deleteRepairOrder(id) {
+      // Reverse all issued parts to restore inventory before deleting
+      await this.reverseAllPartsForOrder(id);
+
+      // Delete related records (cascade should handle this, but be explicit)
+      await window.supabaseClient.from('hold_history').delete().eq('repair_order_id', id);
+      await window.supabaseClient.from('stage_history').delete().eq('repair_order_id', id);
+
+      // Delete documents from storage
+      const { data: docs } = await window.supabaseClient
+        .from('repair_order_documents').select('file_path').eq('repair_order_id', id);
+      if (docs && docs.length > 0) {
+        await window.supabaseClient.storage
+          .from('repair-order-docs')
+          .remove(docs.map(d => d.file_path));
+      }
+      await window.supabaseClient.from('repair_order_documents').delete().eq('repair_order_id', id);
+
+      const { error } = await window.supabaseClient
+        .from('repair_orders').delete().eq('id', id);
+      if (error) { console.error('Error deleting repair order:', error); return false; }
+      return true;
+    },
+
     async archiveRepairOrder(id) {
       const { error } = await window.supabaseClient
         .from('repair_orders').update({ is_archived: true, updated_at: new Date().toISOString() }).eq('id', id);
