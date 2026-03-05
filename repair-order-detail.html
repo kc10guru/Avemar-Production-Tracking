@@ -33,6 +33,7 @@
     .stage-dot.current { background: #0ea5e9; color: white; box-shadow: 0 0 16px rgba(14, 165, 233, 0.5); }
     .stage-dot.on-hold { background: #dc2626; color: white; box-shadow: 0 0 16px rgba(220, 38, 38, 0.5); animation: pulse 2s infinite; }
     .stage-dot.pending { background: rgba(255, 255, 255, 0.1); color: #6b7280; }
+    .stage-dot.skipped { background: rgba(255, 255, 255, 0.05); color: #4b5563; text-decoration: line-through; border: 1px dashed rgba(107, 114, 128, 0.4); }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
     .stage-connector { height: 3px; flex: 1; min-width: 12px; }
     .stage-connector.completed { background: #10b981; }
@@ -204,6 +205,20 @@
     <div class="stat-card rounded-2xl p-8 max-w-lg w-full mx-4">
       <h3 class="text-xl font-bold mb-2">Advance to Next Stage</h3>
       <p class="text-gray-400 mb-6" id="advanceDescription"></p>
+
+      <!-- Inspection Checklist (shown only when advancing from Inspection stage) -->
+      <div id="inspectionChecklistSection" class="hidden mb-6">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+            <i class="fas fa-clipboard-check text-purple-400 text-sm"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-semibold text-white">Inspection Repair Checklist</h4>
+            <p class="text-xs text-gray-500">Select the stages this windshield requires based on inspection results. Unchecked stages will be skipped.</p>
+          </div>
+        </div>
+        <div id="inspectionChecklistItems" class="space-y-2"></div>
+      </div>
 
       <!-- BOM Parts for this stage -->
       <div id="bomPartsSection" class="hidden mb-6">

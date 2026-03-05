@@ -347,7 +347,11 @@
       const reversed = await this.reverseAllPartsForOrder(repairOrderId);
       if (!reversed) return false;
 
-      // 2. Find the new production part and its BOM
+      // 2. Get the order's skipped stages
+      const orderData = await this.getRepairOrder(repairOrderId);
+      const skippedStages = orderData?.skippedStages || [];
+
+      // 3. Find the new production part and its BOM
       const prodParts = await this.getProductionParts();
       const newProdPart = prodParts.find(p => p.partNumber === newPartNumber);
       if (!newProdPart) {
@@ -355,12 +359,12 @@
         return false;
       }
 
-      // 3. Re-issue BOM parts for all stages already completed (< currentStage)
+      // 4. Re-issue BOM parts for completed, non-skipped stages (< currentStage)
       const userId = (await window.supabaseClient.auth.getUser()).data?.user?.id || null;
       const allBom = await this.getBomItems(newProdPart.id);
 
       for (const item of allBom) {
-        if (item.stageNumber < currentStage) {
+        if (item.stageNumber < currentStage && !skippedStages.includes(item.stageNumber)) {
           const subId = item.subcomponentId || item.subcomponents?.id;
           if (!subId) continue;
           await this.issuePart({
@@ -374,7 +378,7 @@
         }
       }
 
-      // 4. Update the repair order's part number
+      // 5. Update the repair order's part number
       const updated = await this.updateRepairOrder(repairOrderId, { partNumber: newPartNumber });
       return !!updated;
     },
@@ -485,9 +489,10 @@
       for (const order of active) {
         const prodPart = productionParts.find(p => p.partNumber === order.partNumber);
         if (!prodPart) continue;
+        const skipped = order.skippedStages || [];
         const bomItems = await this.getBomItems(prodPart.id);
         for (const item of bomItems) {
-          if (item.stageNumber > order.currentStage) {
+          if (item.stageNumber > order.currentStage && !skipped.includes(item.stageNumber)) {
             const subId = item.subcomponentId || item.subcomponents?.id;
             if (!subId) continue;
             if (!projectedNeeds[subId]) projectedNeeds[subId] = 0;

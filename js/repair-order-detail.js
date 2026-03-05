@@ -7,6 +7,28 @@ let documents = [];
 let currentUser = null;
 let productionParts = [];
 
+const INSPECTION_STAGE = 3;
+
+function getSkippedStages() {
+  return order.skippedStages || [];
+}
+
+function isStageSkipped(stageNum) {
+  return getSkippedStages().includes(stageNum);
+}
+
+function getNextActiveStage(fromStage) {
+  let next = fromStage + 1;
+  while (next <= 15 && isStageSkipped(next)) next++;
+  return next;
+}
+
+function getPrevActiveStage(fromStage) {
+  let prev = fromStage - 1;
+  while (prev >= 1 && isStageSkipped(prev)) prev--;
+  return prev;
+}
+
 async function loadPage() {
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
@@ -78,15 +100,27 @@ function renderStageProgress() {
   const isOnHold = order.isOnHold || order.status === 'On Hold';
 
   stages.forEach((stage, idx) => {
+    const skipped = isStageSkipped(stage.stageNumber);
     let dotClass = 'pending';
-    if (stage.stageNumber < order.currentStage) dotClass = 'completed';
-    else if (stage.stageNumber === order.currentStage) dotClass = isOnHold ? 'on-hold' : 'current';
+    if (skipped) {
+      dotClass = 'skipped';
+    } else if (stage.stageNumber < order.currentStage) {
+      dotClass = 'completed';
+    } else if (stage.stageNumber === order.currentStage) {
+      dotClass = isOnHold ? 'on-hold' : 'current';
+    }
 
-    const labelColor = dotClass === 'on-hold' ? 'text-red-400' : dotClass === 'current' ? 'text-avemar-sky' : dotClass === 'completed' ? 'text-emerald-400' : 'text-gray-600';
+    const labelColor = dotClass === 'skipped' ? 'text-gray-600 line-through' : dotClass === 'on-hold' ? 'text-red-400' : dotClass === 'current' ? 'text-avemar-sky' : dotClass === 'completed' ? 'text-emerald-400' : 'text-gray-600';
+
+    const dotContent = dotClass === 'on-hold' ? '<i class="fas fa-hand text-xs"></i>'
+      : dotClass === 'skipped' ? '<i class="fas fa-forward text-xs"></i>'
+      : stage.stageNumber;
+
+    const titleText = stage.stageName + (dotClass === 'on-hold' ? ' (ON HOLD)' : dotClass === 'skipped' ? ' (SKIPPED)' : '');
 
     html.push(`
-      <div class="flex flex-col items-center flex-shrink-0" title="${stage.stageName}${dotClass === 'on-hold' ? ' (ON HOLD)' : ''}">
-        <div class="stage-dot ${dotClass}">${dotClass === 'on-hold' ? '<i class="fas fa-hand text-xs"></i>' : stage.stageNumber}</div>
+      <div class="flex flex-col items-center flex-shrink-0" title="${titleText}">
+        <div class="stage-dot ${dotClass}">${dotContent}</div>
         <span class="text-xs mt-1 ${labelColor} max-w-[70px] text-center leading-tight">
           ${stage.stageName}
         </span>
@@ -363,7 +397,9 @@ function setupDocumentUpload() {
 
 // ─── Stage Revert ────────────────────────────────────────
 async function confirmRevertStage() {
-  const prevStageNum = order.currentStage - 1;
+  const prevStageNum = getPrevActiveStage(order.currentStage);
+  if (prevStageNum < 1) return;
+
   const currentStageDef = stages.find(s => s.stageNumber === order.currentStage);
   const prevStageDef = stages.find(s => s.stageNumber === prevStageNum);
 
@@ -383,15 +419,15 @@ async function revertStage() {
   revertBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Reverting...';
 
   try {
-    const prevStageNum = order.currentStage - 1;
+    const prevStageNum = getPrevActiveStage(order.currentStage);
 
-    // Delete the current stage's history entry (the one we're reverting FROM)
+    // Delete the current stage's history entry
     const currentEntry = history.find(h => h.stageNumber === order.currentStage && !h.exitedAt);
     if (currentEntry) {
       await db.deleteStageEntry(currentEntry.id);
     }
 
-    // Reopen the previous stage's history entry (remove its exit timestamp)
+    // Reopen the previous active stage's history entry
     const prevEntry = history.find(h => h.stageNumber === prevStageNum);
     if (prevEntry) {
       await db.updateStageEntry(prevEntry.id, {
@@ -404,7 +440,7 @@ async function revertStage() {
     // Reverse any parts issued when entering the current stage
     await db.reversePartsForStage(order.id, order.currentStage);
 
-    // Update the repair order back to the previous stage
+    // Update the repair order back to the previous active stage
     await db.updateRepairOrder(order.id, {
       currentStage: prevStageNum,
       status: 'In Progress'
@@ -422,17 +458,64 @@ async function revertStage() {
 
 // ─── Stage Advancement ──────────────────────────────────
 function showAdvanceModal() {
-  const nextStageNum = order.currentStage + 1;
-  const nextStage = stages.find(s => s.stageNumber === nextStageNum);
-  const currentStage = stages.find(s => s.stageNumber === order.currentStage);
+  const currentStageDef = stages.find(s => s.stageNumber === order.currentStage);
+  const checklistSection = document.getElementById('inspectionChecklistSection');
 
-  document.getElementById('advanceDescription').textContent =
-    `Moving from "${currentStage?.stageName}" to "${nextStage?.stageName || 'Completed'}"`;
+  if (order.currentStage === INSPECTION_STAGE) {
+    checklistSection.classList.remove('hidden');
+    renderInspectionChecklist();
 
-  // Load BOM parts for the stage we're entering
-  loadBomPartsForStage(nextStageNum);
+    document.getElementById('advanceDescription').textContent =
+      `Complete "${currentStageDef?.stageName}" and configure the repair path for this windshield.`;
+
+    document.getElementById('bomPartsSection').classList.add('hidden');
+    document.getElementById('bomPartsList').innerHTML = '';
+  } else {
+    checklistSection.classList.add('hidden');
+
+    const nextStageNum = getNextActiveStage(order.currentStage);
+    const nextStageDef = stages.find(s => s.stageNumber === nextStageNum);
+
+    document.getElementById('advanceDescription').textContent =
+      `Moving from "${currentStageDef?.stageName}" to "${nextStageDef?.stageName || 'Completed'}"`;
+
+    loadBomPartsForStage(nextStageNum);
+  }
 
   document.getElementById('advanceModal').classList.remove('hidden');
+}
+
+function renderInspectionChecklist() {
+  const container = document.getElementById('inspectionChecklistItems');
+  const existingSkipped = getSkippedStages();
+
+  const checkableStages = stages.filter(s => s.stageNumber > INSPECTION_STAGE && s.stageNumber <= 13);
+  const alwaysRequired = stages.filter(s => s.stageNumber >= 14);
+
+  container.innerHTML = checkableStages.map(s => {
+    const checked = !existingSkipped.includes(s.stageNumber);
+    return `
+      <label class="flex items-center gap-3 p-3 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition">
+        <input type="checkbox" value="${s.stageNumber}" ${checked ? 'checked' : ''}
+          class="inspection-cb w-5 h-5 rounded border-gray-600 bg-white/10 text-purple-500 focus:ring-purple-500">
+        <span class="text-white text-sm"><span class="text-gray-500 mr-1">${s.stageNumber}.</span> ${s.stageName}</span>
+      </label>
+    `;
+  }).join('');
+
+  if (alwaysRequired.length > 0) {
+    container.innerHTML += `
+      <div class="mt-2 pt-2 border-t border-white/10">
+        <p class="text-xs text-gray-500 mb-2">Always Required</p>
+        ${alwaysRequired.map(s => `
+          <div class="flex items-center gap-3 p-3 bg-white/5 rounded-lg opacity-60">
+            <input type="checkbox" checked disabled class="w-5 h-5 rounded border-gray-600 bg-white/10 text-emerald-500">
+            <span class="text-white text-sm"><span class="text-gray-500 mr-1">${s.stageNumber}.</span> ${s.stageName}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
 }
 
 function hideAdvanceModal() {
@@ -488,10 +571,25 @@ async function advanceStage() {
     const now = new Date().toISOString();
     const userId = currentUser?.id || null;
 
+    // If at inspection stage, save the skipped stages first
+    if (order.currentStage === INSPECTION_STAGE) {
+      const checkedStages = [];
+      document.querySelectorAll('.inspection-cb').forEach(cb => {
+        if (cb.checked) checkedStages.push(Number(cb.value));
+      });
+
+      const allCheckableNums = stages
+        .filter(s => s.stageNumber > INSPECTION_STAGE && s.stageNumber <= 13)
+        .map(s => s.stageNumber);
+
+      const skippedStages = allCheckableNums.filter(sn => !checkedStages.includes(sn));
+      await db.updateRepairOrder(order.id, { skippedStages: skippedStages });
+      order.skippedStages = skippedStages;
+    }
+
     // Close current stage history entry
     const currentEntry = history.find(h => h.stageNumber === order.currentStage && !h.exitedAt);
     if (currentEntry) {
-      // Check if late
       const currentStageDef = stages.find(s => s.stageNumber === order.currentStage);
       const enteredAt = new Date(currentEntry.enteredAt);
       const hoursInStage = calculateBusinessHours(enteredAt, new Date());
@@ -505,21 +603,43 @@ async function advanceStage() {
       });
     }
 
-    // Issue checked BOM parts
+    // Find the next active (non-skipped) stage
+    const newStage = getNextActiveStage(order.currentStage);
+    const isComplete = newStage > 15;
+
+    // Issue checked BOM parts (from advance modal checkboxes)
     const checkboxes = document.querySelectorAll('.bom-checkbox:checked');
     for (const cb of checkboxes) {
       await db.issuePart({
         repairOrderId: order.id,
         subcomponentId: cb.dataset.subId,
         bomItemId: cb.dataset.bomId,
-        stageNumber: order.currentStage + 1,
+        stageNumber: newStage,
         quantityIssued: Number(cb.dataset.qty),
         issuedBy: userId
       });
     }
 
-    const newStage = order.currentStage + 1;
-    const isComplete = newStage > 15;
+    // If advancing from inspection and entering a stage with BOM, auto-issue those parts
+    if (order.currentStage === INSPECTION_STAGE && !isComplete) {
+      const prodPart = productionParts.find(p => p.partNumber === order.partNumber);
+      if (prodPart) {
+        const bomItems = await db.getBomForStage(prodPart.id, newStage);
+        for (const item of bomItems) {
+          const subId = item.subcomponentId || item.subcomponents?.id;
+          if (subId) {
+            await db.issuePart({
+              repairOrderId: order.id,
+              subcomponentId: subId,
+              bomItemId: item.id,
+              stageNumber: newStage,
+              quantityIssued: Number(item.quantityRequired),
+              issuedBy: userId
+            });
+          }
+        }
+      }
+    }
 
     // Update repair order
     const updateData = {
@@ -531,11 +651,11 @@ async function advanceStage() {
 
     // Create next stage history entry (if not complete)
     if (!isComplete) {
-      const nextStage = stages.find(s => s.stageNumber === newStage);
+      const nextStageDef = stages.find(s => s.stageNumber === newStage);
       await db.addStageEntry({
         repairOrderId: order.id,
         stageNumber: newStage,
-        stageName: nextStage?.stageName || `Stage ${newStage}`,
+        stageName: nextStageDef?.stageName || `Stage ${newStage}`,
         enteredAt: now
       });
     }
