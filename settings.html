@@ -94,6 +94,66 @@
       </div>
     </div>
 
+    <!-- Business Hours -->
+    <div class="stat-card rounded-2xl p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold"><i class="fas fa-clock text-avemar-emerald mr-2"></i>Business Hours</h3>
+        <button onclick="saveBusinessHours()" id="saveBizHoursBtn" class="bg-avemar-emerald hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+          <i class="fas fa-save mr-1"></i>Save Changes
+        </button>
+      </div>
+      <p class="text-gray-400 text-sm mb-4">Stage time limits are calculated using business hours only. Time outside these hours (nights, weekends) is not counted.</p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Shop Opens</label>
+          <input type="time" id="bizOpenTime" value="09:00"
+            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Shop Closes</label>
+          <input type="time" id="bizCloseTime" value="18:00"
+            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Timezone</label>
+          <select id="bizTimezone" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold">
+            <option value="America/New_York">Eastern (ET)</option>
+            <option value="America/Chicago">Central (CT)</option>
+            <option value="America/Denver">Mountain (MT)</option>
+            <option value="America/Los_Angeles">Pacific (PT)</option>
+            <option value="America/Anchorage">Alaska (AKT)</option>
+            <option value="Pacific/Honolulu">Hawaii (HT)</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-4">
+        <label class="block text-xs text-gray-400 mb-2">Work Days</label>
+        <div class="flex gap-2">
+          <label class="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg cursor-pointer">
+            <input type="checkbox" value="0" class="workday-cb w-4 h-4 rounded border-gray-600 bg-white/10 text-avemar-gold focus:ring-avemar-gold"> <span class="text-sm text-gray-300">Sun</span>
+          </label>
+          <label class="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg cursor-pointer">
+            <input type="checkbox" value="1" class="workday-cb w-4 h-4 rounded border-gray-600 bg-white/10 text-avemar-gold focus:ring-avemar-gold" checked> <span class="text-sm text-gray-300">Mon</span>
+          </label>
+          <label class="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg cursor-pointer">
+            <input type="checkbox" value="2" class="workday-cb w-4 h-4 rounded border-gray-600 bg-white/10 text-avemar-gold focus:ring-avemar-gold" checked> <span class="text-sm text-gray-300">Tue</span>
+          </label>
+          <label class="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg cursor-pointer">
+            <input type="checkbox" value="3" class="workday-cb w-4 h-4 rounded border-gray-600 bg-white/10 text-avemar-gold focus:ring-avemar-gold" checked> <span class="text-sm text-gray-300">Wed</span>
+          </label>
+          <label class="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg cursor-pointer">
+            <input type="checkbox" value="4" class="workday-cb w-4 h-4 rounded border-gray-600 bg-white/10 text-avemar-gold focus:ring-avemar-gold" checked> <span class="text-sm text-gray-300">Thu</span>
+          </label>
+          <label class="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg cursor-pointer">
+            <input type="checkbox" value="5" class="workday-cb w-4 h-4 rounded border-gray-600 bg-white/10 text-avemar-gold focus:ring-avemar-gold" checked> <span class="text-sm text-gray-300">Fri</span>
+          </label>
+          <label class="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg cursor-pointer">
+            <input type="checkbox" value="6" class="workday-cb w-4 h-4 rounded border-gray-600 bg-white/10 text-avemar-gold focus:ring-avemar-gold"> <span class="text-sm text-gray-300">Sat</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
     <!-- Database Info -->
     <div class="stat-card rounded-2xl p-6">
       <h3 class="text-lg font-semibold mb-4"><i class="fas fa-database text-gray-400 mr-2"></i>Database Connection</h3>

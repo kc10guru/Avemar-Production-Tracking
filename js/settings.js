@@ -10,6 +10,7 @@ async function loadSettings() {
 
   renderParts();
   renderStages();
+  await loadBusinessHours();
 
   document.getElementById('dbStatus').innerHTML =
     '<i class="fas fa-check-circle mr-1"></i>Connected';
@@ -119,6 +120,62 @@ async function handleAddPart(event) {
   } else {
     alert('Failed to add part number. It may already exist.');
   }
+}
+
+// ─── Business Hours ─────────────────────────────────────
+async function loadBusinessHours() {
+  const config = await window.loadBusinessHoursConfig();
+  if (!config) return;
+
+  const openStr = String(config.openHour).padStart(2, '0') + ':' + String(config.openMinute ?? 0).padStart(2, '0');
+  const closeStr = String(config.closeHour).padStart(2, '0') + ':' + String(config.closeMinute ?? 0).padStart(2, '0');
+
+  document.getElementById('bizOpenTime').value = openStr;
+  document.getElementById('bizCloseTime').value = closeStr;
+  document.getElementById('bizTimezone').value = config.timezone || 'America/New_York';
+
+  const workDays = config.workDays || [1, 2, 3, 4, 5];
+  document.querySelectorAll('.workday-cb').forEach(cb => {
+    cb.checked = workDays.includes(Number(cb.value));
+  });
+}
+
+async function saveBusinessHours() {
+  const btn = document.getElementById('saveBizHoursBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Saving...';
+
+  const openParts = document.getElementById('bizOpenTime').value.split(':');
+  const closeParts = document.getElementById('bizCloseTime').value.split(':');
+
+  const workDays = [];
+  document.querySelectorAll('.workday-cb:checked').forEach(cb => {
+    workDays.push(Number(cb.value));
+  });
+
+  const config = {
+    openHour: parseInt(openParts[0]),
+    openMinute: parseInt(openParts[1]),
+    closeHour: parseInt(closeParts[0]),
+    closeMinute: parseInt(closeParts[1]),
+    timezone: document.getElementById('bizTimezone').value,
+    workDays: workDays.sort()
+  };
+
+  const success = await db.saveAppSetting('business_hours', config);
+
+  if (success) {
+    window.businessHoursConfig = config;
+    btn.innerHTML = '<i class="fas fa-check mr-1"></i>Saved!';
+  } else {
+    btn.innerHTML = '<i class="fas fa-times mr-1"></i>Error';
+    alert('Failed to save business hours. Please try again.');
+  }
+
+  btn.disabled = false;
+  setTimeout(() => {
+    btn.innerHTML = '<i class="fas fa-save mr-1"></i>Save Changes';
+  }, 2000);
 }
 
 // ─── Edit Part Modal ────────────────────────────────────

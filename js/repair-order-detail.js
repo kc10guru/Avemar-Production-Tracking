@@ -13,6 +13,7 @@ async function loadPage() {
   if (!id) { window.location.href = 'repair-orders.html'; return; }
 
   currentUser = await getCurrentUser();
+  await window.loadBusinessHoursConfig();
 
   [order, stages, history, issuedParts, productionParts, documents] = await Promise.all([
     db.getRepairOrder(id),
@@ -53,8 +54,8 @@ function renderHeader() {
     banner.classList.remove('hidden');
     document.getElementById('holdBannerReason').textContent = `Reason: ${order.holdReason || 'No reason provided'}`;
     if (order.holdStartedAt) {
-      const hrs = Math.round((new Date() - new Date(order.holdStartedAt)) / (1000 * 60 * 60) * 10) / 10;
-      document.getElementById('holdBannerTime').textContent = `On hold at Stage ${order.holdStage || order.currentStage} for ${hrs} hours`;
+      const hrs = calculateBusinessHours(new Date(order.holdStartedAt), new Date());
+      document.getElementById('holdBannerTime').textContent = `On hold at Stage ${order.holdStage || order.currentStage} for ${hrs} business hours`;
     }
   } else {
     document.getElementById('holdBanner').classList.add('hidden');
@@ -165,10 +166,10 @@ function renderStageTimeline() {
 
     let duration = '';
     if (exited) {
-      const hrs = Math.round((exited - entered) / (1000 * 60 * 60) * 10) / 10;
+      const hrs = calculateBusinessHours(entered, exited);
       duration = `${hrs}h`;
     } else if (isActive) {
-      const hrs = Math.round((new Date() - entered) / (1000 * 60 * 60) * 10) / 10;
+      const hrs = calculateBusinessHours(entered, new Date());
       duration = `${hrs}h (in progress)`;
     }
 
@@ -493,7 +494,7 @@ async function advanceStage() {
       // Check if late
       const currentStageDef = stages.find(s => s.stageNumber === order.currentStage);
       const enteredAt = new Date(currentEntry.enteredAt);
-      const hoursInStage = (new Date() - enteredAt) / (1000 * 60 * 60);
+      const hoursInStage = calculateBusinessHours(enteredAt, new Date());
       const isLate = currentStageDef && hoursInStage > currentStageDef.timeLimitHours;
 
       await db.updateStageEntry(currentEntry.id, {

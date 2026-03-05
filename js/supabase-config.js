@@ -428,7 +428,9 @@
 
       if (openHold && openHold.length > 0) {
         const heldAt = new Date(openHold[0].held_at);
-        const hours = Math.round((new Date() - heldAt) / (1000 * 60 * 60) * 10) / 10;
+        const hours = window.calculateBusinessHours
+          ? window.calculateBusinessHours(heldAt, new Date())
+          : Math.round((new Date() - heldAt) / (1000 * 60 * 60) * 10) / 10;
         await window.supabaseClient
           .from('hold_history').update({
             resumed_by: userId,
@@ -587,6 +589,25 @@
       return data.signedUrl;
     },
 
+    // ─── App Settings ───────────────────────────────────────
+    async getAppSetting(key) {
+      const { data, error } = await window.supabaseClient
+        .from('app_settings').select('value').eq('key', key).single();
+      if (error) { return null; }
+      return data?.value;
+    },
+
+    async saveAppSetting(key, value) {
+      const { error } = await window.supabaseClient
+        .from('app_settings').upsert({
+          key: key,
+          value: value,
+          updated_at: new Date().toISOString()
+        });
+      if (error) { console.error('Error saving setting:', error); return false; }
+      return true;
+    },
+
     // ─── Realtime Subscriptions ─────────────────────────────
     subscribeToRepairOrders(callback) {
       return window.supabaseClient
@@ -601,6 +622,72 @@
         .on('postgres_changes', { event: '*', schema: 'public', table: 'subcomponents' }, callback)
         .subscribe();
     }
+  };
+
+  // ─── Business Hours Calculator (global) ─────────────────
+  const DEFAULT_BIZ_HOURS = {
+    openHour: 9, openMinute: 0,
+    closeHour: 18, closeMinute: 0,
+    timezone: 'America/New_York',
+    workDays: [1, 2, 3, 4, 5]
+  };
+
+  window.businessHoursConfig = null;
+
+  window.loadBusinessHoursConfig = async function() {
+    const saved = await window.db.getAppSetting('business_hours');
+    window.businessHoursConfig = saved || DEFAULT_BIZ_HOURS;
+    return window.businessHoursConfig;
+  };
+
+  window.calculateBusinessHours = function(startDate, endDate, config) {
+    const cfg = config || window.businessHoursConfig || DEFAULT_BIZ_HOURS;
+    const tz = cfg.timezone || 'America/New_York';
+    const openH = cfg.openHour ?? 9;
+    const openM = cfg.openMinute ?? 0;
+    const closeH = cfg.closeHour ?? 18;
+    const closeM = cfg.closeMinute ?? 0;
+    const workDays = cfg.workDays || [1, 2, 3, 4, 5];
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (start >= end) return 0;
+
+    function toTZ(d) {
+      return new Date(d.toLocaleString('en-US', { timeZone: tz }));
+    }
+
+    const startTZ = toTZ(start);
+    const endTZ = toTZ(end);
+
+    let totalMinutes = 0;
+
+    let day = new Date(startTZ);
+    day.setHours(0, 0, 0, 0);
+
+    const lastDay = new Date(endTZ);
+    lastDay.setHours(0, 0, 0, 0);
+
+    while (day <= lastDay) {
+      if (workDays.includes(day.getDay())) {
+        const bizOpen = new Date(day);
+        bizOpen.setHours(openH, openM, 0, 0);
+
+        const bizClose = new Date(day);
+        bizClose.setHours(closeH, closeM, 0, 0);
+
+        const rangeStart = startTZ > bizOpen ? startTZ : bizOpen;
+        const rangeEnd = endTZ < bizClose ? endTZ : bizClose;
+
+        if (rangeStart < rangeEnd) {
+          totalMinutes += (rangeEnd - rangeStart) / (1000 * 60);
+        }
+      }
+
+      day.setDate(day.getDate() + 1);
+    }
+
+    return Math.round(totalMinutes / 60 * 10) / 10;
   };
 
   console.log('Supabase connected to Avemar Production Tracking');
