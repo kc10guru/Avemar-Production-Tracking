@@ -34,12 +34,26 @@
     return obj;
   }
 
-  // Generate RO number: RO-YYYYMMDD-XXXX
-  function generateRoNumber() {
+  // Generate sequential RO number: RO-YYYYMMDD-0001, 0002, etc.
+  async function generateRoNumber() {
     const now = new Date();
     const datePart = now.toISOString().slice(0, 10).replace(/-/g, '');
-    const rand = Math.floor(1000 + Math.random() * 9000);
-    return `RO-${datePart}-${rand}`;
+    const prefix = `RO-${datePart}-`;
+
+    const { data } = await window.supabaseClient
+      .from('repair_orders')
+      .select('ro_number')
+      .like('ro_number', `${prefix}%`)
+      .order('ro_number', { ascending: false })
+      .limit(1);
+
+    let seq = 1;
+    if (data && data.length > 0) {
+      const lastNum = parseInt(data[0].ro_number.split('-').pop(), 10);
+      if (!isNaN(lastNum)) seq = lastNum + 1;
+    }
+
+    return `${prefix}${String(seq).padStart(4, '0')}`;
   }
 
   window.db = {
@@ -122,7 +136,7 @@
     async saveRepairOrder(order) {
       const snakeData = toSnakeCase(order);
       delete snakeData.id;
-      if (!snakeData.ro_number) snakeData.ro_number = generateRoNumber();
+      if (!snakeData.ro_number) snakeData.ro_number = await generateRoNumber();
       const { data, error } = await window.supabaseClient
         .from('repair_orders').insert(snakeData).select();
       if (error) { console.error('Error saving repair order:', error); return null; }
