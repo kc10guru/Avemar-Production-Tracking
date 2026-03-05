@@ -29,7 +29,13 @@ function renderParts() {
         <span class="text-white font-mono text-sm">${p.partNumber}</span>
         <span class="text-gray-400 text-sm ml-3">${p.description || ''}</span>
       </div>
-      <span class="text-xs text-emerald-400"><i class="fas fa-check-circle mr-1"></i>Active</span>
+      <div class="flex items-center gap-3">
+        <button onclick="showEditPartModal('${p.id}', '${p.partNumber.replace(/'/g, "\\'")}', '${(p.description || '').replace(/'/g, "\\'")}')"
+          class="text-gray-400 hover:text-avemar-sky transition text-sm" title="Edit">
+          <i class="fas fa-pen"></i>
+        </button>
+        <span class="text-xs text-emerald-400"><i class="fas fa-check-circle mr-1"></i>Active</span>
+      </div>
     </div>
   `).join('');
 }
@@ -113,6 +119,43 @@ async function handleAddPart(event) {
   } else {
     alert('Failed to add part number. It may already exist.');
   }
+}
+
+// ─── Edit Part Modal ────────────────────────────────────
+function showEditPartModal(id, partNumber, description) {
+  document.getElementById('editPartId').value = id;
+  document.getElementById('editPartNumber').value = partNumber;
+  document.getElementById('editPartDescription').value = description;
+  document.getElementById('editPartModal').classList.remove('hidden');
+}
+
+function hideEditPartModal() {
+  document.getElementById('editPartModal').classList.add('hidden');
+}
+
+async function handleEditPart(event) {
+  event.preventDefault();
+
+  const id = document.getElementById('editPartId').value;
+  const partNumber = document.getElementById('editPartNumber').value.trim();
+  const description = document.getElementById('editPartDescription').value.trim() || null;
+
+  if (!partNumber) { alert('Part number is required.'); return; }
+
+  const btn = document.getElementById('editPartSaveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+
+  const result = await db.updateProductionPart(id, { partNumber, description });
+  if (result) {
+    hideEditPartModal();
+    await loadSettings();
+  } else {
+    alert('Failed to update part number. Please try again.');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-save mr-2"></i>Save';
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

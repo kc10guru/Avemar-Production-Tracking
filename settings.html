@@ -111,6 +111,32 @@
 
   </main>
 
+  <!-- Edit Part Modal -->
+  <div id="editPartModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div class="stat-card rounded-2xl p-8 max-w-md w-full mx-4">
+      <h3 class="text-xl font-bold mb-6">Edit Windshield Part Number</h3>
+      <form onsubmit="handleEditPart(event)">
+        <input type="hidden" id="editPartId">
+        <div class="mb-4">
+          <label class="block text-xs text-gray-400 mb-1">Part Number *</label>
+          <input type="text" id="editPartNumber" required
+            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold">
+        </div>
+        <div class="mb-6">
+          <label class="block text-xs text-gray-400 mb-1">Description</label>
+          <input type="text" id="editPartDescription"
+            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-avemar-gold">
+        </div>
+        <div class="flex gap-3 justify-end">
+          <button type="button" onclick="hideEditPartModal()" class="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
+          <button type="submit" id="editPartSaveBtn" class="bg-avemar-gold hover:bg-amber-600 text-black px-6 py-2 rounded-lg font-semibold transition">
+            <i class="fas fa-save mr-2"></i>Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Add Part Modal -->
   <div id="addPartModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
     <div class="stat-card rounded-2xl p-8 max-w-md w-full mx-4">
