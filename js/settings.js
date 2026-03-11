@@ -216,6 +216,10 @@ async function handleEditPart(event) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await initializeAuth();
+  const user = await initializeAuth();
+  if (!user || !isAdmin(user)) {
+    window.location.href = 'index.html';
+    return;
+  }
   await loadSettings();
 });

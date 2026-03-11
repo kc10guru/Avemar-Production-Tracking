@@ -151,7 +151,11 @@ async function removeBomItem(id) {
 
 // ─── Init ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  await initializeAuth();
+  const user = await initializeAuth();
+  if (!user || !isAdmin(user)) {
+    window.location.href = 'index.html';
+    return;
+  }
   await loadPage();
 
   document.getElementById('partSelect').addEventListener('change', (e) => {

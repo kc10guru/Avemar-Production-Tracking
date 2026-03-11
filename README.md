@@ -21,6 +21,7 @@ Run the SQL schema in your Supabase SQL Editor:
 - **Frontend:** HTML + vanilla JavaScript + Tailwind CSS (CDN)
 - **Backend:** Supabase (PostgreSQL) at `https://avemar-db.duckdns.org`
 - **Auth:** Supabase Auth (shared with Glass Aero CRM)
+- **Admin access:** BOM and Settings tabs require `app_metadata.role === 'admin'`. See `sql/add-admin-role.md` for how to grant admin rights.
 - **Hosting:** GitHub Pages
 
 ## Pages

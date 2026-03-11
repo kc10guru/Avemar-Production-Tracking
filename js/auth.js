@@ -22,6 +22,11 @@ async function getCurrentUser() {
   return user;
 }
 
+/** Returns true if user has admin role (app_metadata.role === 'admin') */
+function isAdmin(user) {
+  return user?.app_metadata?.role === 'admin';
+}
+
 async function signOut() {
   if (!window.supabaseClient) return;
   await window.supabaseClient.auth.signOut();
@@ -43,6 +48,11 @@ async function initializeAuth() {
         </button>
       `;
       nav.appendChild(userInfo);
+
+      // Hide BOM and Settings links for non-admin users
+      if (!isAdmin(user)) {
+        nav.querySelectorAll('[data-admin-only]').forEach(el => el.style.display = 'none');
+      }
     }
   }
 
