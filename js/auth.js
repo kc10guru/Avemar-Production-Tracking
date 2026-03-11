@@ -49,9 +49,9 @@ async function initializeAuth() {
       `;
       nav.appendChild(userInfo);
 
-      // Hide BOM and Settings links for non-admin users
+      // Hide admin-only elements (BOM, Settings, Import, Delete, etc.) for non-admin users
       if (!isAdmin(user)) {
-        nav.querySelectorAll('[data-admin-only]').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('[data-admin-only]').forEach(el => el.style.display = 'none');
       }
     }
   }

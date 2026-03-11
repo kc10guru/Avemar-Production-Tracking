@@ -865,6 +865,10 @@ async function resumeOrder() {
 
 // ─── Delete Order ───────────────────────────────────────
 async function confirmDeleteOrder() {
+  if (!currentUser || !isAdmin(currentUser)) {
+    alert('Only administrators can delete repair orders.');
+    return;
+  }
   const confirmed = confirm(
     `DELETE repair order "${order.roNumber}"?\n\n` +
     `This will permanently remove:\n` +

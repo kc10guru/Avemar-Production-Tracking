@@ -256,7 +256,11 @@ async function importSingleOrder(row) {
 
 // ─── Init ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  await initializeAuth();
+  const user = await initializeAuth();
+  if (!user || !isAdmin(user)) {
+    window.location.href = 'repair-orders.html';
+    return;
+  }
   await loadImportPage();
 
   document.getElementById('importFileInput').addEventListener('change', (e) => {
