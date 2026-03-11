@@ -68,7 +68,7 @@ function downloadTemplate() {
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Repair Orders');
-  XLSX.writeFile(wb, 'Avemar_Import_Template.xlsx');
+  XLSX.writeFile(wb, 'Glass_Aero_Import_Template.xlsx');
 }
 
 // ─── File Upload & Parse ────────────────────────────────

@@ -65,7 +65,7 @@ function renderBom() {
     container.innerHTML = `
       <div class="stat-card rounded-xl p-8 text-center">
         <p class="text-gray-400 mb-2">No BOM items defined for this part number.</p>
-        <button onclick="showAddBomModal()" class="text-avemar-gold hover:underline text-sm">Add your first item</button>
+        <button onclick="showAddBomModal()" class="text-glassAero-gold hover:underline text-sm">Add your first item</button>
       </div>`;
     return;
   }
@@ -85,7 +85,7 @@ function renderBom() {
     .map(([stageNum, items]) => `
       <div class="stat-card rounded-xl p-4">
         <h4 class="text-sm font-semibold text-gray-400 mb-3">
-          <span class="text-avemar-gold">Stage ${stageNum}</span> — ${stageNames[stageNum] || ''}
+          <span class="text-glassAero-gold">Stage ${stageNum}</span> — ${stageNames[stageNum] || ''}
         </h4>
         <div class="space-y-2">
           ${items.map(item => {

@@ -1,4 +1,4 @@
--- Add Hold Feature to Avemar Production Tracking
+-- Add Hold Feature to Glass Aero Production Tracking
 -- Run this in Supabase SQL Editor
 
 -- Add hold columns to repair_orders

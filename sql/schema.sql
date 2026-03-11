@@ -1,4 +1,4 @@
--- Avemar Production Tracking - Database Schema
+-- Glass Aero Production Tracking - Database Schema
 -- Run this in Supabase SQL Editor to create all tables
 
 -- 1. Production Parts (windshield part numbers)

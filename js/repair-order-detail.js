@@ -110,7 +110,7 @@ function renderStageProgress() {
       dotClass = isOnHold ? 'on-hold' : 'current';
     }
 
-    const labelColor = dotClass === 'skipped' ? 'text-gray-600 line-through' : dotClass === 'on-hold' ? 'text-red-400' : dotClass === 'current' ? 'text-avemar-sky' : dotClass === 'completed' ? 'text-emerald-400' : 'text-gray-600';
+    const labelColor = dotClass === 'skipped' ? 'text-gray-600 line-through' : dotClass === 'on-hold' ? 'text-red-400' : dotClass === 'current' ? 'text-glassAero-sky' : dotClass === 'completed' ? 'text-emerald-400' : 'text-gray-600';
 
     const dotContent = dotClass === 'on-hold' ? '<i class="fas fa-hand text-xs"></i>'
       : dotClass === 'skipped' ? '<i class="fas fa-forward text-xs"></i>'
@@ -210,7 +210,7 @@ function renderStageTimeline() {
     return `
       <div class="flex gap-3">
         <div class="flex flex-col items-center">
-          <div class="w-3 h-3 rounded-full ${isActive ? 'bg-avemar-sky animate-pulse' : exited ? 'bg-emerald-500' : 'bg-gray-600'}"></div>
+          <div class="w-3 h-3 rounded-full ${isActive ? 'bg-glassAero-sky animate-pulse' : exited ? 'bg-emerald-500' : 'bg-gray-600'}"></div>
           <div class="w-0.5 flex-1 ${exited ? 'bg-emerald-500/30' : 'bg-gray-700'}"></div>
         </div>
         <div class="pb-4 flex-1">
@@ -289,7 +289,7 @@ function renderDocuments() {
           <p class="text-xs text-gray-500">${sizeStr} &bull; ${stageName} &bull; ${date}</p>
         </div>
         <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition">
-          <button onclick="viewDocument('${doc.filePath}', ${isImage})" class="w-8 h-8 bg-avemar-sky/20 hover:bg-avemar-sky/30 rounded-lg flex items-center justify-center text-avemar-sky transition" title="View / Download">
+          <button onclick="viewDocument('${doc.filePath}', ${isImage})" class="w-8 h-8 bg-glassAero-sky/20 hover:bg-glassAero-sky/30 rounded-lg flex items-center justify-center text-glassAero-sky transition" title="View / Download">
             <i class="fas fa-eye text-sm"></i>
           </button>
           <button onclick="confirmDeleteDocument('${doc.id}', '${doc.filePath}', '${doc.fileName.replace(/'/g, "\\'")}')" class="w-8 h-8 bg-red-500/20 hover:bg-red-500/30 rounded-lg flex items-center justify-center text-red-400 transition" title="Delete">
@@ -378,17 +378,17 @@ function setupDocumentUpload() {
 
   dropZone.addEventListener('dragover', (e) => {
     e.preventDefault();
-    dropZone.classList.add('border-avemar-sky/50', 'bg-avemar-sky/5');
+    dropZone.classList.add('border-glassAero-sky/50', 'bg-glassAero-sky/5');
   });
 
   dropZone.addEventListener('dragleave', (e) => {
     e.preventDefault();
-    dropZone.classList.remove('border-avemar-sky/50', 'bg-avemar-sky/5');
+    dropZone.classList.remove('border-glassAero-sky/50', 'bg-glassAero-sky/5');
   });
 
   dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
-    dropZone.classList.remove('border-avemar-sky/50', 'bg-avemar-sky/5');
+    dropZone.classList.remove('border-glassAero-sky/50', 'bg-glassAero-sky/5');
     if (e.dataTransfer.files.length > 0) {
       handleFileUpload(e.dataTransfer.files);
     }
@@ -554,7 +554,7 @@ async function loadBomPartsForStage(stageNumber) {
           </span>
           <span class="text-white text-sm font-medium">x${item.quantityRequired}</span>
           <input type="checkbox" checked data-bom-id="${item.id}" data-sub-id="${sub?.id}" data-qty="${item.quantityRequired}"
-            class="bom-checkbox w-4 h-4 rounded border-gray-600 bg-white/10 text-avemar-gold focus:ring-avemar-gold">
+            class="bom-checkbox w-4 h-4 rounded border-gray-600 bg-white/10 text-glassAero-gold focus:ring-glassAero-gold">
         </div>
       </div>
     `;

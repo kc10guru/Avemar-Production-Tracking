@@ -1,4 +1,4 @@
-// Supabase Configuration for Avemar Production Tracking
+// Supabase Configuration for Glass Aero Production Tracking
 (function() {
   const SUPABASE_URL = 'https://avemar-db.duckdns.org';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNjQxNzY5MjAwLCJleHAiOjE3OTk1MzU2MDB9.Z7TQV4VxWaN_eGuMgccr_8q55wyu2rjBQhlwU_w3xJE';
@@ -733,5 +733,5 @@
     return Math.round(totalMinutes / 60 * 10) / 10;
   };
 
-  console.log('Supabase connected to Avemar Production Tracking');
+  console.log('Supabase connected to Glass Aero Production Tracking');
 })();

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Repair Order Detail - Avemar Production Tracking</title>
+  <title>Repair Order Detail - Glass Aero Production Tracking</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,7 +15,7 @@
         extend: {
           fontFamily: { 'outfit': ['Outfit', 'sans-serif'] },
           colors: {
-            'avemar': {
+            'glassAero': {
               'navy': '#0a1628', 'slate': '#1e293b', 'steel': '#334155',
               'sky': '#0ea5e9', 'gold': '#f59e0b', 'emerald': '#10b981',
             }
@@ -52,21 +52,21 @@
 <body class="gradient-bg min-h-screen text-white">
 
   <!-- Navigation -->
-  <nav class="bg-avemar-navy/80 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50 no-print">
+  <nav class="bg-glassAero-navy/80 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50 no-print">
     <div class="max-w-7xl mx-auto px-6 py-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-gradient-to-br from-avemar-gold to-orange-600 rounded-lg flex items-center justify-center">
+          <div class="w-10 h-10 bg-gradient-to-br from-glassAero-gold to-orange-600 rounded-lg flex items-center justify-center">
             <i class="fas fa-industry text-white text-lg"></i>
           </div>
           <div>
-            <h1 class="text-xl font-bold text-white">Avemar Group</h1>
+            <h1 class="text-xl font-bold text-white">Glass Aero</h1>
             <p class="text-xs text-gray-400">Production Tracking</p>
           </div>
         </div>
         <div class="flex items-center gap-6">
           <a href="index.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-chart-line mr-2"></i>Dashboard</a>
-          <a href="repair-orders.html" class="text-avemar-gold font-medium"><i class="fas fa-clipboard-list mr-2"></i>Repair Orders</a>
+          <a href="repair-orders.html" class="text-glassAero-gold font-medium"><i class="fas fa-clipboard-list mr-2"></i>Repair Orders</a>
           <a href="inventory.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-boxes-stacked mr-2"></i>Inventory</a>
           <a href="bom.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-list-check mr-2"></i>BOM</a>
           <a href="reports.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-file-chart-line mr-2"></i>Reports</a>
@@ -103,7 +103,7 @@
         <button onclick="resumeOrder()" id="resumeBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-semibold transition text-sm hidden">
           <i class="fas fa-play mr-2"></i>Resume
         </button>
-        <button onclick="showAdvanceModal()" id="advanceBtn" class="bg-avemar-gold hover:bg-amber-600 text-black px-6 py-2 rounded-lg font-semibold transition text-sm hidden">
+        <button onclick="showAdvanceModal()" id="advanceBtn" class="bg-glassAero-gold hover:bg-amber-600 text-black px-6 py-2 rounded-lg font-semibold transition text-sm hidden">
           <i class="fas fa-arrow-right mr-2"></i>Advance Stage
         </button>
       </div>
@@ -138,7 +138,7 @@
       <div class="lg:col-span-2 space-y-6">
         <div class="stat-card rounded-2xl p-6">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold"><i class="fas fa-info-circle text-avemar-sky mr-2"></i>Order Details</h3>
+            <h3 class="text-lg font-semibold"><i class="fas fa-info-circle text-glassAero-sky mr-2"></i>Order Details</h3>
             <button onclick="showEditModal()" id="editOrderBtn" class="bg-white/5 border border-white/10 px-4 py-2 rounded-lg text-gray-300 hover:text-white transition text-sm hidden">
               <i class="fas fa-pen mr-2"></i>Edit
             </button>
@@ -152,7 +152,7 @@
         <div class="stat-card rounded-2xl p-6">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold"><i class="fas fa-file-alt text-purple-400 mr-2"></i>Documents</h3>
-            <label class="bg-avemar-sky/20 hover:bg-avemar-sky/30 text-avemar-sky px-4 py-2 rounded-lg text-sm cursor-pointer transition">
+            <label class="bg-glassAero-sky/20 hover:bg-glassAero-sky/30 text-glassAero-sky px-4 py-2 rounded-lg text-sm cursor-pointer transition">
               <i class="fas fa-upload mr-2"></i>Upload
               <input type="file" id="docFileInput" class="hidden" multiple
                 accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,image/png,image/jpeg,image/gif,image/webp,application/pdf">
@@ -161,7 +161,7 @@
 
           <!-- Drop zone -->
           <div id="dropZone"
-            class="border-2 border-dashed border-white/10 rounded-xl p-6 text-center mb-4 transition hover:border-avemar-sky/40">
+            class="border-2 border-dashed border-white/10 rounded-xl p-6 text-center mb-4 transition hover:border-glassAero-sky/40">
             <i class="fas fa-cloud-upload-alt text-3xl text-gray-600 mb-2"></i>
             <p class="text-gray-500 text-sm">Drag and drop files here, or click Upload above</p>
             <p class="text-gray-600 text-xs mt-1">PDF, PNG, JPG, GIF, WEBP — Max 10MB per file</p>
@@ -169,9 +169,9 @@
 
           <!-- Upload progress -->
           <div id="uploadProgress" class="hidden mb-4">
-            <div class="flex items-center gap-3 p-3 bg-avemar-sky/10 rounded-lg">
-              <i class="fas fa-spinner fa-spin text-avemar-sky"></i>
-              <span class="text-sm text-avemar-sky" id="uploadProgressText">Uploading...</span>
+            <div class="flex items-center gap-3 p-3 bg-glassAero-sky/10 rounded-lg">
+              <i class="fas fa-spinner fa-spin text-glassAero-sky"></i>
+              <span class="text-sm text-glassAero-sky" id="uploadProgressText">Uploading...</span>
             </div>
           </div>
 
@@ -194,7 +194,7 @@
 
       <!-- Stage History Timeline -->
       <div class="stat-card rounded-2xl p-6">
-        <h3 class="text-lg font-semibold mb-4"><i class="fas fa-history text-avemar-gold mr-2"></i>Stage History</h3>
+        <h3 class="text-lg font-semibold mb-4"><i class="fas fa-history text-glassAero-gold mr-2"></i>Stage History</h3>
         <div class="space-y-4" id="stageTimeline">
           <div class="text-gray-400 text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading...</div>
         </div>
@@ -232,12 +232,12 @@
       <div class="mb-4">
         <label class="block text-sm text-gray-400 mb-1">Notes (optional)</label>
         <textarea id="advanceNotes" rows="3"
-          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold resize-none"
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-glassAero-gold resize-none"
           placeholder="Add any notes about this stage completion..."></textarea>
       </div>
       <div class="flex gap-3 justify-end">
         <button onclick="hideAdvanceModal()" class="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
-        <button onclick="advanceStage()" id="confirmAdvanceBtn" class="bg-avemar-gold hover:bg-amber-600 text-black px-6 py-2 rounded-lg font-semibold transition">
+        <button onclick="advanceStage()" id="confirmAdvanceBtn" class="bg-glassAero-gold hover:bg-amber-600 text-black px-6 py-2 rounded-lg font-semibold transition">
           <i class="fas fa-check mr-2"></i>Confirm
         </button>
       </div>
@@ -247,7 +247,7 @@
   <!-- Edit Order Modal -->
   <div id="editModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
     <div class="stat-card rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-      <h3 class="text-xl font-bold mb-6"><i class="fas fa-pen text-avemar-sky mr-2"></i>Edit Repair Order</h3>
+      <h3 class="text-xl font-bold mb-6"><i class="fas fa-pen text-glassAero-sky mr-2"></i>Edit Repair Order</h3>
 
       <div class="space-y-4">
         <div id="partNumberWarning" class="hidden p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl mb-4">
@@ -262,18 +262,18 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm text-gray-400 mb-1">Part Number <span class="text-red-400">*</span></label>
-            <select id="editPartNumber" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-avemar-gold">
+            <select id="editPartNumber" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-glassAero-gold">
               <option value="">Select part number...</option>
             </select>
           </div>
           <div>
             <label class="block text-sm text-gray-400 mb-1">Customer Name <span class="text-red-400">*</span></label>
             <input type="text" id="editCustomerName"
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-glassAero-gold">
           </div>
           <div>
             <label class="block text-sm text-gray-400 mb-1">Contract Type</label>
-            <select id="editContractType" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-avemar-gold">
+            <select id="editContractType" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-glassAero-gold">
               <option value="Commercial Sales">Commercial Sales</option>
               <option value="C12">C12</option>
             </select>
@@ -281,65 +281,65 @@
           <div>
             <label class="block text-sm text-gray-400 mb-1">Serial Number <span class="text-red-400">*</span></label>
             <input type="text" id="editSerialNumber"
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-glassAero-gold">
           </div>
           <div>
             <label class="block text-sm text-gray-400 mb-1">Purchase Order</label>
             <input type="text" id="editPurchaseOrder"
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-glassAero-gold">
           </div>
           <div>
             <label class="block text-sm text-gray-400 mb-1">Invoice Number</label>
             <input type="text" id="editInvoiceNumber"
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-glassAero-gold">
           </div>
           <div>
             <label class="block text-sm text-gray-400 mb-1">Shipping Address</label>
             <input type="text" id="editShippingAddress"
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-glassAero-gold">
           </div>
           <div>
             <label class="block text-sm text-gray-400 mb-1">Aircraft Tail Number</label>
             <input type="text" id="editAircraftTailNumber"
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-glassAero-gold">
           </div>
           <div>
             <label class="block text-sm text-gray-400 mb-1">Aircraft Type</label>
             <input type="text" id="editAircraftType"
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-glassAero-gold">
           </div>
           <div>
             <label class="block text-sm text-gray-400 mb-1">Contact Name</label>
             <input type="text" id="editContactName"
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-glassAero-gold">
           </div>
           <div>
             <label class="block text-sm text-gray-400 mb-1">Contact Email</label>
             <input type="email" id="editContactEmail"
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-glassAero-gold">
           </div>
           <div>
             <label class="block text-sm text-gray-400 mb-1">Contact Phone</label>
             <input type="tel" id="editContactPhone"
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-glassAero-gold">
           </div>
           <div>
             <label class="block text-sm text-gray-400 mb-1">Expected Completion</label>
             <input type="date" id="editExpectedCompletion"
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-avemar-gold">
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-glassAero-gold">
           </div>
         </div>
         <div>
           <label class="block text-sm text-gray-400 mb-1">Notes</label>
           <textarea id="editNotes" rows="3"
-            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold resize-none"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-glassAero-gold resize-none"
             placeholder="Additional notes..."></textarea>
         </div>
       </div>
 
       <div class="flex gap-3 justify-end mt-6">
         <button onclick="hideEditModal()" class="px-4 py-2 text-gray-400 hover:text-white transition">Cancel</button>
-        <button onclick="saveOrderEdits()" id="saveEditBtn" class="bg-avemar-gold hover:bg-amber-600 text-black px-6 py-2 rounded-lg font-semibold transition">
+        <button onclick="saveOrderEdits()" id="saveEditBtn" class="bg-glassAero-gold hover:bg-amber-600 text-black px-6 py-2 rounded-lg font-semibold transition">
           <i class="fas fa-save mr-2"></i>Save Changes
         </button>
       </div>

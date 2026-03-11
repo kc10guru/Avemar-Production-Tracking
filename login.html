@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Avemar Production Tracking</title>
+  <title>Login - Glass Aero Production Tracking</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
         extend: {
           fontFamily: { 'outfit': ['Outfit', 'sans-serif'] },
           colors: {
-            'avemar': {
+            'glassAero': {
               'navy': '#0a1628', 'slate': '#1e293b', 'steel': '#334155',
               'sky': '#0ea5e9', 'gold': '#f59e0b', 'emerald': '#10b981',
             }
@@ -33,10 +33,10 @@
 
   <div class="w-full max-w-md">
     <div class="text-center mb-8">
-      <div class="w-20 h-20 bg-gradient-to-br from-avemar-gold to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 glow">
+      <div class="w-20 h-20 bg-gradient-to-br from-glassAero-gold to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 glow">
         <i class="fas fa-industry text-white text-3xl"></i>
       </div>
-      <h1 class="text-3xl font-bold mb-2">Avemar Group</h1>
+      <h1 class="text-3xl font-bold mb-2">Glass Aero</h1>
       <p class="text-gray-400">Production Tracking</p>
     </div>
 
@@ -49,7 +49,7 @@
           <div class="relative">
             <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
             <input type="email" id="email" required placeholder="you@company.com"
-              class="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+              class="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-glassAero-gold">
           </div>
         </div>
 
@@ -58,7 +58,7 @@
           <div class="relative">
             <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
             <input type="password" id="password" required placeholder="••••••••"
-              class="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-avemar-gold">
+              class="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-glassAero-gold">
           </div>
         </div>
 
@@ -67,7 +67,7 @@
           <span id="errorText">Invalid email or password</span>
         </div>
 
-        <button type="submit" id="loginBtn" class="w-full bg-avemar-gold hover:bg-amber-600 text-black py-3 rounded-xl font-semibold transition flex items-center justify-center gap-2">
+        <button type="submit" id="loginBtn" class="w-full bg-glassAero-gold hover:bg-amber-600 text-black py-3 rounded-xl font-semibold transition flex items-center justify-center gap-2">
           <i class="fas fa-sign-in-alt"></i> Sign In
         </button>
       </form>

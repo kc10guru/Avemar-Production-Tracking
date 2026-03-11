@@ -59,7 +59,7 @@ function renderOrders() {
 
   if (allOrders.length === 0) {
     tbody.innerHTML = `<tr><td colspan="7" class="py-12 text-center text-gray-400">
-      No repair orders found. <a href="new-repair-order.html" class="text-avemar-gold hover:underline">Create one</a>
+      No repair orders found. <a href="new-repair-order.html" class="text-glassAero-gold hover:underline">Create one</a>
     </td></tr>`;
     return;
   }

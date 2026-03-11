@@ -32,7 +32,7 @@ function renderParts() {
       </div>
       <div class="flex items-center gap-3">
         <button onclick="showEditPartModal('${p.id}', '${p.partNumber.replace(/'/g, "\\'")}', '${(p.description || '').replace(/'/g, "\\'")}')"
-          class="text-gray-400 hover:text-avemar-sky transition text-sm" title="Edit">
+          class="text-gray-400 hover:text-glassAero-sky transition text-sm" title="Edit">
           <i class="fas fa-pen"></i>
         </button>
         <span class="text-xs text-emerald-400"><i class="fas fa-check-circle mr-1"></i>Active</span>
@@ -61,7 +61,7 @@ function renderStages() {
         <span class="text-xs ${roleColor} w-24">${roleLabel}</span>
         <div class="flex items-center gap-2">
           <input type="number" value="${s.timeLimitHours}" min="1" data-stage-id="${s.id}"
-            class="stage-time-input w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-white text-sm text-center focus:outline-none focus:border-avemar-gold">
+            class="stage-time-input w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-white text-sm text-center focus:outline-none focus:border-glassAero-gold">
           <span class="text-xs text-gray-500">hours</span>
         </div>
       </div>

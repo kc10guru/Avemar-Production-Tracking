@@ -1,6 +1,6 @@
-# Avemar Production Tracking
+# Glass Aero Production Tracking
 
-Aviation windshield repair/overhaul production tracking system for Avemar Group.
+Aviation windshield repair/overhaul production tracking system for Glass Aero.
 
 ## Setup
 
@@ -20,7 +20,7 @@ Run the SQL schema in your Supabase SQL Editor:
 ## Architecture
 - **Frontend:** HTML + vanilla JavaScript + Tailwind CSS (CDN)
 - **Backend:** Supabase (PostgreSQL) at `https://avemar-db.duckdns.org`
-- **Auth:** Supabase Auth (shared with Avemar CRM)
+- **Auth:** Supabase Auth (shared with Glass Aero CRM)
 - **Hosting:** GitHub Pages
 
 ## Pages

@@ -12,7 +12,7 @@ function showReport(reportId) {
     const active = id === reportId;
     document.getElementById('tab-' + id).className =
       'px-6 py-3 rounded-xl font-semibold transition text-sm ' +
-      (active ? 'bg-avemar-gold text-black' : 'bg-white/5 border border-white/10 text-gray-300 hover:text-white');
+      (active ? 'bg-glassAero-gold text-black' : 'bg-white/5 border border-white/10 text-gray-300 hover:text-white');
   });
 
   if (reportId === 'inventory') loadProjectedInventory();
@@ -116,9 +116,9 @@ function renderStageBreakdown(activeOrders) {
         <span class="text-xs text-gray-500 w-8 text-right">${stage.stageNumber}</span>
         <span class="text-sm text-white flex-1">${stage.stageName}</span>
         <div class="w-48 bg-white/5 rounded-full h-3 overflow-hidden">
-          <div class="h-full rounded-full ${units.length > 0 ? 'bg-avemar-sky' : ''}" style="width: ${pct}%"></div>
+          <div class="h-full rounded-full ${units.length > 0 ? 'bg-glassAero-sky' : ''}" style="width: ${pct}%"></div>
         </div>
-        <span class="text-sm font-bold w-8 text-right ${units.length > 0 ? 'text-avemar-sky' : 'text-gray-600'}">${units.length}</span>
+        <span class="text-sm font-bold w-8 text-right ${units.length > 0 ? 'text-glassAero-sky' : 'text-gray-600'}">${units.length}</span>
       </div>
     `;
   });
@@ -270,7 +270,7 @@ function renderProjectedInventory(rows) {
                 <td class="py-3 text-white font-medium">${r.partNumber}</td>
                 <td class="py-3 text-gray-300">${r.description}</td>
                 <td class="py-3 text-right text-gray-300">${r.onHand} ${r.unitOfMeasure}</td>
-                <td class="py-3 text-right text-avemar-gold">${r.projected}</td>
+                <td class="py-3 text-right text-glassAero-gold">${r.projected}</td>
                 <td class="py-3 text-right font-bold ${r.available < 0 ? 'text-red-400' : r.available <= r.reorderPoint ? 'text-amber-400' : 'text-emerald-400'}">${r.available}</td>
                 <td class="py-3 text-right text-gray-400">${r.orderCount}</td>
                 <td class="py-3 text-center"><span class="px-2 py-1 rounded-full text-xs ${statusClass}">${statusText}</span></td>
@@ -435,7 +435,7 @@ function loadQuarterlyReport() {
           ${months.map((m, i) => `
             <tr class="border-b border-white/5">
               <td class="py-3 text-white font-medium">${m} ${year}</td>
-              <td class="py-3 text-right text-avemar-sky">${recByMonth[i]}</td>
+              <td class="py-3 text-right text-glassAero-sky">${recByMonth[i]}</td>
               <td class="py-3 text-right text-emerald-400">${delByMonth[i]}</td>
               <td class="py-3 text-right text-red-400">${scrByMonth[i]}</td>
               <td class="py-3 text-right font-semibold text-white">${delByMonth[i] - recByMonth[i] >= 0 ? '+' : ''}${delByMonth[i] - recByMonth[i]}</td>
@@ -443,7 +443,7 @@ function loadQuarterlyReport() {
           `).join('')}
           <tr class="border-t border-white/20">
             <td class="py-3 text-white font-bold">Total</td>
-            <td class="py-3 text-right font-bold text-avemar-sky">${received.length}</td>
+            <td class="py-3 text-right font-bold text-glassAero-sky">${received.length}</td>
             <td class="py-3 text-right font-bold text-emerald-400">${delivered.length}</td>
             <td class="py-3 text-right font-bold text-red-400">${scrapped.length}</td>
             <td class="py-3 text-right font-bold text-white">${delivered.length - received.length >= 0 ? '+' : ''}${delivered.length - received.length}</td>
@@ -558,18 +558,18 @@ function loadAnnualReport() {
           ${MONTH_NAMES.map((m, i) => `
             <tr class="border-b border-white/5">
               <td class="py-3 text-white font-medium">${m}</td>
-              <td class="py-3 text-right text-avemar-sky">${recByMonth[i]}</td>
+              <td class="py-3 text-right text-glassAero-sky">${recByMonth[i]}</td>
               <td class="py-3 text-right text-emerald-400">${delByMonth[i]}</td>
               <td class="py-3 text-right text-red-400">${scrByMonth[i]}</td>
-              <td class="py-3 text-right font-semibold text-avemar-gold">${cumDelivered[i]}</td>
+              <td class="py-3 text-right font-semibold text-glassAero-gold">${cumDelivered[i]}</td>
             </tr>
           `).join('')}
           <tr class="border-t border-white/20">
             <td class="py-3 text-white font-bold">Total</td>
-            <td class="py-3 text-right font-bold text-avemar-sky">${received.length}</td>
+            <td class="py-3 text-right font-bold text-glassAero-sky">${received.length}</td>
             <td class="py-3 text-right font-bold text-emerald-400">${delivered.length}</td>
             <td class="py-3 text-right font-bold text-red-400">${scrapped.length}</td>
-            <td class="py-3 text-right font-bold text-avemar-gold">${cumSum}</td>
+            <td class="py-3 text-right font-bold text-glassAero-gold">${cumSum}</td>
           </tr>
         </tbody>
       </table>

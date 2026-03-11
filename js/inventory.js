@@ -50,7 +50,7 @@ function renderTable() {
 
   if (allParts.length === 0) {
     tbody.innerHTML = `<tr><td colspan="9" class="py-12 text-center text-gray-400">
-      No parts found. <button onclick="showAddModal()" class="text-avemar-gold hover:underline">Add your first part</button>
+      No parts found. <button onclick="showAddModal()" class="text-glassAero-gold hover:underline">Add your first part</button>
     </td></tr>`;
     return;
   }

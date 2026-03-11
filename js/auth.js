@@ -1,4 +1,4 @@
-// Authentication helper functions for Avemar Production Tracking
+// Authentication helper functions for Glass Aero Production Tracking
 
 async function requireAuth() {
   if (!window.supabaseClient) {
