@@ -121,7 +121,7 @@ function renderStageProgress() {
     html.push(`
       <div class="flex flex-col items-center flex-shrink-0" title="${titleText}">
         <div class="stage-dot ${dotClass}">${dotContent}</div>
-        <span class="text-xs mt-1 ${labelColor} max-w-[70px] text-center leading-tight">
+        <span class="text-[10px] mt-1 ${labelColor} max-w-[60px] text-center leading-tight">
           ${stage.stageName}
         </span>
       </div>

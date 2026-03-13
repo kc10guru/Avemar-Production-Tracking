@@ -6,7 +6,7 @@ DELETE FROM production_stages;
 
 -- Step 2: Insert new 18-stage workflow
 INSERT INTO production_stages (stage_number, stage_name, required_role, time_limit_hours) VALUES
-  (1,  'Receiving/Inspection',              'receiving',   2),
+  (1,  'Receiving Inspection',                'receiving',   2),
   (2,  'Disassembly',                       'shop_floor',  24),
   (3,  'Removal of Conductive Coating',     'shop_floor',  24),
   (4,  'P1 Autoclave',                      'shop_floor',  48),
