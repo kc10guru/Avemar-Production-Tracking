@@ -46,7 +46,7 @@ function downloadTemplate() {
     part_number: `Valid: ${validParts}`,
     serial_number: 'Required',
     contract_type: 'Commercial Sales or C12',
-    current_stage: '1-15 (default 1)',
+    current_stage: '1-18 (default 1)',
     status: 'In Progress, On Hold, Completed',
     date_received: 'YYYY-MM-DD format',
     expected_completion: 'YYYY-MM-DD format',
@@ -110,7 +110,7 @@ function validateAndPreview() {
     if (!row.serial_number) issues.push('Missing serial number');
 
     const stage = Number(row.current_stage) || 1;
-    if (stage < 1 || stage > 15) issues.push(`Invalid stage: ${stage}`);
+    if (stage < 1 || stage > 18) issues.push(`Invalid stage: ${stage}`);
 
     row._issues = issues;
     row._valid = issues.length === 0;

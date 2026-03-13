@@ -7,7 +7,7 @@ let documents = [];
 let currentUser = null;
 let productionParts = [];
 
-const INSPECTION_STAGE = 3;
+const INSPECTION_STAGE = 1;
 
 function getSkippedStages() {
   return order.skippedStages || [];
@@ -19,7 +19,7 @@ function isStageSkipped(stageNum) {
 
 function getNextActiveStage(fromStage) {
   let next = fromStage + 1;
-  while (next <= 15 && isStageSkipped(next)) next++;
+  while (next <= 18 && isStageSkipped(next)) next++;
   return next;
 }
 
@@ -83,7 +83,7 @@ function renderHeader() {
     document.getElementById('holdBanner').classList.add('hidden');
     document.getElementById('resumeBtn').classList.add('hidden');
 
-    if (order.status === 'In Progress' && order.currentStage <= 15) {
+    if (order.status === 'In Progress' && order.currentStage <= 18) {
       document.getElementById('advanceBtn').classList.remove('hidden');
       document.getElementById('holdBtn').classList.remove('hidden');
     }
@@ -489,8 +489,8 @@ function renderInspectionChecklist() {
   const container = document.getElementById('inspectionChecklistItems');
   const existingSkipped = getSkippedStages();
 
-  const checkableStages = stages.filter(s => s.stageNumber > INSPECTION_STAGE && s.stageNumber <= 13);
-  const alwaysRequired = stages.filter(s => s.stageNumber >= 14);
+  const checkableStages = stages.filter(s => s.stageNumber > INSPECTION_STAGE && s.stageNumber <= 17);
+  const alwaysRequired = stages.filter(s => s.stageNumber >= 18);
 
   container.innerHTML = checkableStages.map(s => {
     const checked = !existingSkipped.includes(s.stageNumber);
@@ -579,7 +579,7 @@ async function advanceStage() {
       });
 
       const allCheckableNums = stages
-        .filter(s => s.stageNumber > INSPECTION_STAGE && s.stageNumber <= 13)
+        .filter(s => s.stageNumber > INSPECTION_STAGE && s.stageNumber <= 17)
         .map(s => s.stageNumber);
 
       const skippedStages = allCheckableNums.filter(sn => !checkedStages.includes(sn));
@@ -605,7 +605,7 @@ async function advanceStage() {
 
     // Find the next active (non-skipped) stage
     const newStage = getNextActiveStage(order.currentStage);
-    const isComplete = newStage > 15;
+    const isComplete = newStage > 18;
 
     // Issue checked BOM parts (from advance modal checkboxes)
     const checkboxes = document.querySelectorAll('.bom-checkbox:checked');
@@ -643,7 +643,7 @@ async function advanceStage() {
 
     // Update repair order
     const updateData = {
-      currentStage: isComplete ? 15 : newStage,
+      currentStage: isComplete ? 18 : newStage,
       status: isComplete ? 'Completed' : 'In Progress'
     };
     if (isComplete) updateData.dateCompleted = now;
