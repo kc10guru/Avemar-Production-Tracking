@@ -100,6 +100,9 @@ function renderBom() {
                 <div class="flex items-center gap-4">
                   <span class="text-white text-sm">x${item.quantityRequired}</span>
                   <span class="text-xs text-gray-500">${sub?.unitOfMeasure || 'each'}</span>
+                  <button onclick="showEditBomModal('${item.id}', ${item.stageNumber}, ${item.quantityRequired}, '${(item.notes || '').replace(/'/g, "\\'")}')" class="text-glassAero-sky hover:text-sky-300 transition text-sm" title="Edit">
+                    <i class="fas fa-pen"></i>
+                  </button>
                   <button onclick="removeBomItem('${item.id}')" class="text-red-400 hover:text-red-300 transition text-sm" title="Remove">
                     <i class="fas fa-trash"></i>
                   </button>
@@ -138,6 +141,48 @@ async function handleSaveBomItem(event) {
     await loadBom(currentPartId);
   } else {
     alert('Failed to save BOM item.');
+  }
+}
+
+// ─── Edit BOM Item Modal ────────────────────────────────
+function showEditBomModal(id, stageNumber, qty, notes) {
+  document.getElementById('editBomItemId').value = id;
+  document.getElementById('editBomQtyRequired').value = qty;
+  document.getElementById('editBomNotes').value = notes;
+
+  const stageSelect = document.getElementById('editBomStageNumber');
+  stageSelect.innerHTML = '';
+  stages.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.stageNumber;
+    opt.textContent = `${s.stageNumber}. ${s.stageName}`;
+    if (s.stageNumber === stageNumber) opt.selected = true;
+    stageSelect.appendChild(opt);
+  });
+
+  document.getElementById('editBomModal').classList.remove('hidden');
+}
+
+function hideEditBomModal() {
+  document.getElementById('editBomModal').classList.add('hidden');
+}
+
+async function handleUpdateBomItem(event) {
+  event.preventDefault();
+
+  const id = document.getElementById('editBomItemId').value;
+  const updates = {
+    stageNumber: Number(document.getElementById('editBomStageNumber').value),
+    quantityRequired: Number(document.getElementById('editBomQtyRequired').value),
+    notes: document.getElementById('editBomNotes').value.trim() || null
+  };
+
+  const result = await db.updateBomItem(id, updates);
+  if (result) {
+    hideEditBomModal();
+    await loadBom(currentPartId);
+  } else {
+    alert('Failed to update BOM item.');
   }
 }
 
