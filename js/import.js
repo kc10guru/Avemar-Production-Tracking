@@ -1,4 +1,10 @@
 // Import Repair Orders page logic
+const GLASS_STAGE = 7;
+
+function isCRJPart(partNumber) {
+  return partNumber?.startsWith('NP139321') || partNumber?.startsWith('601R33033');
+}
+
 let productionParts = [];
 let stages = [];
 let parsedRows = [];
@@ -46,7 +52,7 @@ function downloadTemplate() {
     part_number: `Valid: ${validParts}`,
     serial_number: 'Required',
     contract_type: 'Commercial Sales or C12',
-    current_stage: '1-18 (default 1)',
+    current_stage: '1-19 (default 1)',
     status: 'In Progress, On Hold, Completed',
     date_received: 'YYYY-MM-DD format',
     expected_completion: 'YYYY-MM-DD format',
@@ -110,7 +116,7 @@ function validateAndPreview() {
     if (!row.serial_number) issues.push('Missing serial number');
 
     const stage = Number(row.current_stage) || 1;
-    if (stage < 1 || stage > 18) issues.push(`Invalid stage: ${stage}`);
+    if (stage < 1 || stage > 19) issues.push(`Invalid stage: ${stage}`);
 
     row._issues = issues;
     row._valid = issues.length === 0;
@@ -232,6 +238,10 @@ async function importSingleOrder(row) {
     notes: row.notes ? String(row.notes).trim() : null,
     dateCompleted: status === 'Completed' ? now : null
   };
+
+  if (isCRJPart(partNumber)) {
+    orderData.skippedStages = [GLASS_STAGE];
+  }
 
   const saved = await db.saveRepairOrder(orderData);
   if (!saved) throw new Error('Failed to save repair order');

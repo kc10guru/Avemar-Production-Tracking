@@ -1,4 +1,9 @@
 // New Repair Order form logic
+const GLASS_STAGE = 7;
+
+function isCRJPart(partNumber) {
+  return partNumber?.startsWith('NP139321') || partNumber?.startsWith('601R33033');
+}
 
 async function loadForm() {
   const parts = await db.getProductionParts();
@@ -51,6 +56,10 @@ async function handleSubmit(event) {
       currentStage: 1,
       status: 'In Progress'
     };
+
+    if (isCRJPart(order.partNumber)) {
+      order.skippedStages = [GLASS_STAGE];
+    }
 
     const saved = await db.saveRepairOrder(order);
     if (!saved) {

@@ -8,6 +8,11 @@ let currentUser = null;
 let productionParts = [];
 
 const INSPECTION_STAGE = 1;
+const GLASS_STAGE = 7;
+
+function isCRJPart(partNumber) {
+  return partNumber?.startsWith('NP139321') || partNumber?.startsWith('601R33033');
+}
 
 function getSkippedStages() {
   return order.skippedStages || [];
@@ -19,7 +24,7 @@ function isStageSkipped(stageNum) {
 
 function getNextActiveStage(fromStage) {
   let next = fromStage + 1;
-  while (next <= 18 && isStageSkipped(next)) next++;
+  while (next <= 19 && isStageSkipped(next)) next++;
   return next;
 }
 
@@ -83,7 +88,7 @@ function renderHeader() {
     document.getElementById('holdBanner').classList.add('hidden');
     document.getElementById('resumeBtn').classList.add('hidden');
 
-    if (order.status === 'In Progress' && order.currentStage <= 18) {
+    if (order.status === 'In Progress' && order.currentStage <= 19) {
       document.getElementById('advanceBtn').classList.remove('hidden');
       document.getElementById('holdBtn').classList.remove('hidden');
     }
@@ -489,8 +494,11 @@ function renderInspectionChecklist() {
   const container = document.getElementById('inspectionChecklistItems');
   const existingSkipped = getSkippedStages();
 
-  const checkableStages = stages.filter(s => s.stageNumber > INSPECTION_STAGE && s.stageNumber <= 17);
-  const alwaysRequired = stages.filter(s => s.stageNumber >= 18);
+  const crjLocked = isCRJPart(order.partNumber) ? [GLASS_STAGE] : [];
+  const checkableStages = stages.filter(s =>
+    s.stageNumber > INSPECTION_STAGE && s.stageNumber <= 18 && !crjLocked.includes(s.stageNumber)
+  );
+  const alwaysRequired = stages.filter(s => s.stageNumber >= 19);
 
   container.innerHTML = checkableStages.map(s => {
     const checked = !existingSkipped.includes(s.stageNumber);
@@ -578,11 +586,13 @@ async function advanceStage() {
         if (cb.checked) checkedStages.push(Number(cb.value));
       });
 
+      const crjLockedStages = isCRJPart(order.partNumber) ? [GLASS_STAGE] : [];
       const allCheckableNums = stages
-        .filter(s => s.stageNumber > INSPECTION_STAGE && s.stageNumber <= 17)
+        .filter(s => s.stageNumber > INSPECTION_STAGE && s.stageNumber <= 18 && !crjLockedStages.includes(s.stageNumber))
         .map(s => s.stageNumber);
 
       const skippedStages = allCheckableNums.filter(sn => !checkedStages.includes(sn));
+      crjLockedStages.forEach(s => { if (!skippedStages.includes(s)) skippedStages.push(s); });
       await db.updateRepairOrder(order.id, { skippedStages: skippedStages });
       order.skippedStages = skippedStages;
     }
@@ -605,7 +615,7 @@ async function advanceStage() {
 
     // Find the next active (non-skipped) stage
     const newStage = getNextActiveStage(order.currentStage);
-    const isComplete = newStage > 18;
+    const isComplete = newStage > 19;
 
     // Issue checked BOM parts (from advance modal checkboxes)
     const checkboxes = document.querySelectorAll('.bom-checkbox:checked');
@@ -643,7 +653,7 @@ async function advanceStage() {
 
     // Update repair order
     const updateData = {
-      currentStage: isComplete ? 18 : newStage,
+      currentStage: isComplete ? 19 : newStage,
       status: isComplete ? 'Completed' : 'In Progress'
     };
     if (isComplete) updateData.dateCompleted = now;

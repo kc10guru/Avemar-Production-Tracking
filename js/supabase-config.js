@@ -416,7 +416,18 @@
         }
       }
 
-      // 5. Update the repair order's part number
+      // 5. Adjust skipped_stages for CRJ ↔ King Air part number changes
+      const GLASS_STAGE = 7;
+      const isCRJ = newPartNumber.startsWith('NP139321') || newPartNumber.startsWith('601R33033');
+      if (isCRJ && !skippedStages.includes(GLASS_STAGE)) {
+        skippedStages.push(GLASS_STAGE);
+        await this.updateRepairOrder(repairOrderId, { skippedStages });
+      } else if (!isCRJ && skippedStages.includes(GLASS_STAGE)) {
+        const filtered = skippedStages.filter(s => s !== GLASS_STAGE);
+        await this.updateRepairOrder(repairOrderId, { skippedStages: filtered });
+      }
+
+      // 6. Update the repair order's part number
       const updated = await this.updateRepairOrder(repairOrderId, { partNumber: newPartNumber });
       return !!updated;
     },
