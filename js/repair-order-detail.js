@@ -882,31 +882,30 @@ function printBarcodeLabel() {
 
   const canvas = document.createElement('canvas');
   if (typeof JsBarcode !== 'undefined') {
-    JsBarcode(canvas, order.roNumber, { format: 'CODE128', width: 2, height: 60 });
+    JsBarcode(canvas, order.roNumber, { format: 'CODE128', width: 1.2, height: 35 });
   }
   const dataUrl = canvas.toDataURL ? canvas.toDataURL('image/png') : '';
 
-  const w = window.open('', '_blank', 'width=420,height=320');
+  const w = window.open('', '_blank', 'width=280,height=180');
   w.document.write(`
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Barcode - ${ro}</title>
+  <title>Glass Aero</title>
   <style>
-    body { margin: 0; padding: 20px; font-family: system-ui, sans-serif; text-align: center; }
-    h2 { margin: 0 0 8px 0; font-size: 14px; color: #666; }
-    .ro { font-size: 20px; font-weight: bold; margin: 0 0 12px 0; letter-spacing: 1px; }
-    img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
-    .meta { font-size: 12px; color: #444; margin: 12px 0 0 0; }
-    .hint { font-size: 11px; color: #999; margin: 16px 0 0 0; }
+    body { margin: 0; padding: 8px; font-family: system-ui, sans-serif; text-align: center; }
+    h2 { margin: 0 0 4px 0; font-size: 11px; color: #333; }
+    img { max-width: 200px; height: auto; display: block; margin: 2px auto; }
+    .ro { font-size: 12px; font-weight: bold; margin: 2px 0 4px 0; letter-spacing: 0.5px; }
+    .meta { font-size: 10px; color: #444; margin: 0; }
+    @page { margin: 0.25in; size: 2.5in 1.5in; }
   </style>
 </head>
 <body>
   <h2>Glass Aero</h2>
+  ${dataUrl ? `<img src="${dataUrl}" alt="Barcode" />` : `<p style="color:#999;font-size:11px;">${ro}</p>`}
   <p class="ro">${ro}</p>
-  ${dataUrl ? `<img src="${dataUrl}" alt="Barcode" />` : `<p style="color:#999;">Barcode: ${ro}</p>`}
   <p class="meta">${part} &middot; ${serial}</p>
-  <p class="hint">Close window after printing</p>
   <script>setTimeout(function(){ window.print(); }, 300);<\/script>
 </body>
 </html>`);
