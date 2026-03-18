@@ -217,12 +217,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   const scanInput = document.getElementById('scanInput');
   scanInput.focus();
 
+  function doLookup() {
+    const val = scanInput.value.trim();
+    if (val) lookupOrder(val);
+  }
+
   scanInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' || e.keyCode === 13 || e.keyCode === 10) {
       e.preventDefault();
-      lookupOrder(scanInput.value);
+      e.stopPropagation();
+      setTimeout(doLookup, 0);
     }
   });
 
-  document.body.addEventListener('click', () => scanInput.focus());
+  scanInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' || e.keyCode === 13 || e.keyCode === 10) {
+      e.preventDefault();
+      setTimeout(doLookup, 0);
+    }
+  });
+
+  scanInput.addEventListener('input', () => {
+    const val = scanInput.value;
+    if (val.includes('\n') || val.includes('\r')) {
+      scanInput.value = val.replace(/[\r\n]/g, '').trim();
+      doLookup();
+    }
+  });
+
+  document.getElementById('lookupBtn').addEventListener('click', doLookup);
+
+  document.body.addEventListener('click', (e) => {
+    if (!e.target.closest('#lookupBtn')) scanInput.focus();
+  });
 });
