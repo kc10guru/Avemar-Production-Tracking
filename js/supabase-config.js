@@ -133,6 +133,13 @@
       return toCamelCase(data);
     },
 
+    async getRepairOrderByRoNumber(roNumber) {
+      const { data, error } = await window.supabaseClient
+        .from('repair_orders').select('*').eq('ro_number', roNumber.trim()).maybeSingle();
+      if (error) { console.error('Error fetching repair order by RO:', error); return null; }
+      return data ? toCamelCase(data) : null;
+    },
+
     async saveRepairOrder(order) {
       const snakeData = toSnakeCase(order);
       delete snakeData.id;
