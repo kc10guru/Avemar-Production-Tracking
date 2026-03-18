@@ -896,12 +896,12 @@ function printBarcodeLabel() {
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow: hidden; }
     body { padding: 6px; font-family: system-ui, sans-serif; text-align: center; }
-    .label { max-width: 2.25in; }
+    .label { max-width: 2.25in; min-height: 1.3in; }
     h2 { font-size: 10px; color: #333; margin-bottom: 2px; }
     img { max-width: 180px; height: auto; display: block; margin: 0 auto 2px; }
     .ro { font-size: 11px; font-weight: bold; letter-spacing: 0.5px; margin-bottom: 2px; }
     .meta { font-size: 9px; color: #444; }
-    @page { margin: 0.2in; size: 2.5in 1.25in; }
+    @page { margin: 0.1in; size: 2.5in 1.75in; }
   </style>
 </head>
 <body>
