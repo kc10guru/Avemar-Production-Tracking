@@ -92,6 +92,9 @@
         <button onclick="confirmDeleteOrder()" id="deleteBtn" data-admin-only class="bg-white/5 border border-red-500/30 px-4 py-2 rounded-lg text-red-400 hover:bg-red-600 hover:text-white transition text-sm">
           <i class="fas fa-trash mr-2"></i>Delete
         </button>
+        <button onclick="printBarcodeLabel()" class="bg-glassAero-sky/20 border border-glassAero-sky/50 px-4 py-2 rounded-lg text-glassAero-sky hover:bg-glassAero-sky/30 transition text-sm">
+          <i class="fas fa-barcode mr-2"></i>Print Barcode
+        </button>
         <button onclick="window.print()" class="bg-white/5 border border-white/10 px-4 py-2 rounded-lg text-gray-300 hover:text-white transition text-sm">
           <i class="fas fa-print mr-2"></i>Print
         </button>
@@ -373,8 +376,9 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="js/supabase-config.js?v=3"></script>
   <script src="js/auth.js?v=2"></script>
-  <script src="js/repair-order-detail.js?v=3"></script>
+  <script src="js/repair-order-detail.js?v=4"></script>
 </body>
 </html>

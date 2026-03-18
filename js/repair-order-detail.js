@@ -873,6 +873,46 @@ async function resumeOrder() {
   btn.innerHTML = '<i class="fas fa-play mr-2"></i>Resume';
 }
 
+// ─── Print Barcode Label ────────────────────────────────
+function printBarcodeLabel() {
+  if (!order) return;
+  const ro = String(order.roNumber || '').replace(/"/g, '&quot;');
+  const part = String(order.partNumber || '').replace(/"/g, '&quot;');
+  const serial = String(order.serialNumber || '').replace(/"/g, '&quot;');
+
+  const canvas = document.createElement('canvas');
+  if (typeof JsBarcode !== 'undefined') {
+    JsBarcode(canvas, order.roNumber, { format: 'CODE128', width: 2, height: 60 });
+  }
+  const dataUrl = canvas.toDataURL ? canvas.toDataURL('image/png') : '';
+
+  const w = window.open('', '_blank', 'width=420,height=320');
+  w.document.write(`
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Barcode - ${ro}</title>
+  <style>
+    body { margin: 0; padding: 20px; font-family: system-ui, sans-serif; text-align: center; }
+    h2 { margin: 0 0 8px 0; font-size: 14px; color: #666; }
+    .ro { font-size: 20px; font-weight: bold; margin: 0 0 12px 0; letter-spacing: 1px; }
+    img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+    .meta { font-size: 12px; color: #444; margin: 12px 0 0 0; }
+    .hint { font-size: 11px; color: #999; margin: 16px 0 0 0; }
+  </style>
+</head>
+<body>
+  <h2>Glass Aero</h2>
+  <p class="ro">${ro}</p>
+  ${dataUrl ? `<img src="${dataUrl}" alt="Barcode" />` : `<p style="color:#999;">Barcode: ${ro}</p>`}
+  <p class="meta">${part} &middot; ${serial}</p>
+  <p class="hint">Close window after printing</p>
+  <script>setTimeout(function(){ window.print(); }, 300);<\/script>
+</body>
+</html>`);
+  w.document.close();
+}
+
 // ─── Delete Order ───────────────────────────────────────
 async function confirmDeleteOrder() {
   if (!currentUser || !isAdmin(currentUser)) {
