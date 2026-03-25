@@ -873,7 +873,7 @@ async function resumeOrder() {
   btn.innerHTML = '<i class="fas fa-play mr-2"></i>Resume';
 }
 
-// ─── Print Barcode Label ────────────────────────────────
+// ─── Print Barcode Label (Brother QL-1100C / DK-1208: 3.5" x 1.4") ────────────────────────────────
 function printBarcodeLabel() {
   if (!order) return;
   const ro = String(order.roNumber || '').replace(/"/g, '&quot;');
@@ -882,34 +882,45 @@ function printBarcodeLabel() {
 
   const canvas = document.createElement('canvas');
   if (typeof JsBarcode !== 'undefined') {
-    JsBarcode(canvas, order.roNumber, { format: 'CODE128', width: 1.2, height: 35, displayValue: false });
+    JsBarcode(canvas, order.roNumber, { format: 'CODE128', width: 2, height: 50, displayValue: false });
   }
   const dataUrl = canvas.toDataURL ? canvas.toDataURL('image/png') : '';
 
-  const w = window.open('', '_blank', 'width=280,height=180');
+  const w = window.open('', '_blank', 'width=380,height=160');
   w.document.write(`
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Glass Aero</title>
+  <title>Glass Aero Label</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; overflow: hidden; }
-    body { padding: 6px; font-family: system-ui, sans-serif; text-align: center; }
-    .label { max-width: 2.25in; min-height: 1.3in; }
-    h2 { font-size: 10px; color: #333; margin-bottom: 2px; }
-    img { max-width: 180px; height: auto; display: block; margin: 0 auto 2px; }
-    .ro { font-size: 11px; font-weight: bold; letter-spacing: 0.5px; margin-bottom: 2px; }
-    .meta { font-size: 9px; color: #444; }
-    @page { margin: 0.1in; size: 2.5in 1.75in; }
+    html, body { width: 3.5in; height: 1.4in; overflow: hidden; }
+    body { padding: 0.08in; font-family: Arial, sans-serif; }
+    .label { display: flex; align-items: center; height: 100%; gap: 0.15in; }
+    .barcode { flex-shrink: 0; }
+    .barcode img { width: 1.4in; height: auto; }
+    .info { flex: 1; text-align: left; overflow: hidden; }
+    .company { font-size: 9pt; font-weight: bold; color: #000; margin-bottom: 2px; }
+    .ro { font-size: 11pt; font-weight: bold; letter-spacing: 0.3px; margin-bottom: 3px; }
+    .part { font-size: 9pt; color: #222; margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .serial { font-size: 8pt; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    @page { margin: 0; size: 3.5in 1.4in; }
+    @media print {
+      html, body { width: 3.5in; height: 1.4in; }
+    }
   </style>
 </head>
 <body>
   <div class="label">
-    <h2>Glass Aero</h2>
-    ${dataUrl ? `<img src="${dataUrl}" alt="" />` : ''}
-    <p class="ro">${ro}</p>
-    <p class="meta">${part} &middot; ${serial}</p>
+    <div class="barcode">
+      ${dataUrl ? `<img src="${dataUrl}" alt="" />` : ''}
+    </div>
+    <div class="info">
+      <div class="company">Glass Aero</div>
+      <div class="ro">${ro}</div>
+      <div class="part">${part}</div>
+      <div class="serial">${serial}</div>
+    </div>
   </div>
   <script>setTimeout(function(){ window.print(); }, 300);<\/script>
 </body>
