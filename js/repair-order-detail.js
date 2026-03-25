@@ -882,7 +882,7 @@ function printBarcodeLabel() {
 
   const canvas = document.createElement('canvas');
   if (typeof JsBarcode !== 'undefined') {
-    JsBarcode(canvas, order.roNumber, { format: 'CODE128', width: 2, height: 50, displayValue: false });
+    JsBarcode(canvas, order.roNumber, { format: 'CODE128', width: 2, height: 40, displayValue: false, margin: 0 });
   }
   const dataUrl = canvas.toDataURL ? canvas.toDataURL('image/png') : '';
 
@@ -895,15 +895,13 @@ function printBarcodeLabel() {
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 3.5in; height: 1.4in; overflow: hidden; }
-    body { padding: 0.08in; font-family: Arial, sans-serif; }
-    .label { display: flex; align-items: center; height: 100%; gap: 0.15in; }
-    .barcode { flex-shrink: 0; }
-    .barcode img { width: 1.4in; height: auto; }
-    .info { flex: 1; text-align: left; overflow: hidden; }
-    .company { font-size: 9pt; font-weight: bold; color: #000; margin-bottom: 2px; }
-    .ro { font-size: 11pt; font-weight: bold; letter-spacing: 0.3px; margin-bottom: 3px; }
-    .part { font-size: 9pt; color: #222; margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .serial { font-size: 8pt; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    body { padding: 0.05in 0.1in; font-family: Arial, sans-serif; text-align: center; }
+    .label { display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+    .company { font-size: 11pt; font-weight: bold; color: #000; }
+    .ro { font-size: 12pt; font-weight: bold; letter-spacing: 0.5px; }
+    .meta { font-size: 9pt; color: #222; }
+    .barcode { width: 100%; }
+    .barcode img { width: 100%; height: 0.45in; }
     @page { margin: 0; size: 3.5in 1.4in; }
     @media print {
       html, body { width: 3.5in; height: 1.4in; }
@@ -912,14 +910,11 @@ function printBarcodeLabel() {
 </head>
 <body>
   <div class="label">
+    <div class="company">Glass Aero</div>
+    <div class="ro">${ro}</div>
+    <div class="meta">${part} &bull; ${serial}</div>
     <div class="barcode">
       ${dataUrl ? `<img src="${dataUrl}" alt="" />` : ''}
-    </div>
-    <div class="info">
-      <div class="company">Glass Aero</div>
-      <div class="ro">${ro}</div>
-      <div class="part">${part}</div>
-      <div class="serial">${serial}</div>
     </div>
   </div>
   <script>setTimeout(function(){ window.print(); }, 300);<\/script>
