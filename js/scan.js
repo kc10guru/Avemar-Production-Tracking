@@ -20,24 +20,50 @@ function getNextActiveStage(fromStage) {
   return next;
 }
 
+function hideAllStates() {
+  document.getElementById('readyState').classList.add('hidden');
+  document.getElementById('errorState').classList.add('hidden');
+  document.getElementById('resultArea').classList.add('hidden');
+  document.getElementById('multiResultArea').classList.add('hidden');
+}
+
 async function lookupOrder(roNumber) {
   const trimmed = String(roNumber).trim();
   if (!trimmed) return;
 
-  document.getElementById('readyState').classList.add('hidden');
-  document.getElementById('errorState').classList.add('hidden');
-  document.getElementById('resultArea').classList.add('hidden');
+  hideAllStates();
+  document.getElementById('resultArea').classList.remove('hidden');
   document.getElementById('orderContent').innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-3xl text-glassAero-gold"></i><p class="mt-2 text-gray-400">Looking up...</p></div>';
 
+  // Try exact match first (case-insensitive) - fast path for barcode scans
   const found = await db.getRepairOrderByRoNumber(trimmed);
-  if (!found) {
-    document.getElementById('errorMessage').textContent = `No repair order found for "${trimmed}"`;
-    document.getElementById('errorState').classList.remove('hidden');
-    document.getElementById('scanInput').value = '';
-    document.getElementById('scanInput').focus();
+  if (found) {
+    await loadFoundOrder(found);
     return;
   }
 
+  // Fall back to partial search
+  const results = await db.searchRepairOrders(trimmed);
+
+  if (results.length === 1) {
+    await loadFoundOrder(results[0]);
+    return;
+  }
+
+  if (results.length > 1) {
+    showMultipleResults(results, trimmed);
+    return;
+  }
+
+  // Nothing found
+  hideAllStates();
+  document.getElementById('errorMessage').textContent = `No repair order found for "${trimmed}"`;
+  document.getElementById('errorState').classList.remove('hidden');
+  document.getElementById('scanInput').value = '';
+  document.getElementById('scanInput').focus();
+}
+
+async function loadFoundOrder(found) {
   [order, stages, history, productionParts] = await Promise.all([
     Promise.resolve(found),
     db.getProductionStages(),
@@ -46,9 +72,52 @@ async function lookupOrder(roNumber) {
   ]);
 
   renderOrder();
+  hideAllStates();
   document.getElementById('resultArea').classList.remove('hidden');
   document.getElementById('scanInput').value = '';
   document.getElementById('scanInput').focus();
+}
+
+function showMultipleResults(results, searchTerm) {
+  hideAllStates();
+  document.getElementById('multiResultTitle').textContent = `${results.length} matches for "${searchTerm}"`;
+
+  const list = document.getElementById('multiResultList');
+  list.innerHTML = results.map(r => {
+    const statusColors = {
+      'In Progress': 'bg-sky-500/20 text-sky-400',
+      'Completed': 'bg-emerald-500/20 text-emerald-400',
+      'On Hold': 'bg-amber-500/20 text-amber-400'
+    };
+    const statusClass = statusColors[r.status] || 'bg-gray-500/20 text-gray-400';
+
+    return `
+      <button onclick="selectOrder('${r.roNumber}')"
+        class="w-full text-left p-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-glassAero-gold/50 rounded-xl transition">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-glassAero-gold font-bold font-mono text-lg">${r.roNumber}</span>
+          <span class="px-2 py-0.5 rounded-full text-xs ${statusClass}">${r.status}</span>
+        </div>
+        <div class="text-gray-400 text-sm">${r.customerName || '--'}</div>
+        <div class="text-gray-500 text-xs">${r.partNumber || '--'} · ${r.serialNumber || '--'}</div>
+      </button>
+    `;
+  }).join('');
+
+  document.getElementById('multiResultArea').classList.remove('hidden');
+  document.getElementById('scanInput').value = '';
+  document.getElementById('scanInput').focus();
+}
+
+async function selectOrder(roNumber) {
+  hideAllStates();
+  document.getElementById('resultArea').classList.remove('hidden');
+  document.getElementById('orderContent').innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-3xl text-glassAero-gold"></i><p class="mt-2 text-gray-400">Loading...</p></div>';
+
+  const found = await db.getRepairOrderByRoNumber(roNumber);
+  if (found) {
+    await loadFoundOrder(found);
+  }
 }
 
 function renderOrder() {
