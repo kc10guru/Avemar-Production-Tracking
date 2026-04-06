@@ -17,3 +17,4 @@ fix-compose.sh
 db-export.sql
 onprem-*.js
 add-tools.sh
+add-studio.sh
