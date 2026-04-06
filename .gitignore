@@ -5,3 +5,14 @@
 # OS files
 .DS_Store
 Thumbs.db
+
+# Deployment scripts (contain secrets)
+fix-*.sh
+diagnose*.sh
+check-db.sh
+test-api.sh
+import-db.sh
+setup-server.sh
+fix-compose.sh
+db-export.sql
+onprem-*.js
