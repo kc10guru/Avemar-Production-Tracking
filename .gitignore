@@ -16,3 +16,4 @@ setup-server.sh
 fix-compose.sh
 db-export.sql
 onprem-*.js
+add-tools.sh
