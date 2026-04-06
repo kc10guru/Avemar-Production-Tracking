@@ -1,20 +1,21 @@
-# Environment files
+# Environment files (contain secrets)
 .env
 .env.local
-
+.env.production
 # OS files
 .DS_Store
 Thumbs.db
 
-# Deployment scripts (contain secrets)
-fix-*.sh
-diagnose*.sh
-check-db.sh
-test-api.sh
-import-db.sh
-setup-server.sh
-fix-compose.sh
+# ALL shell scripts (deployment/fix scripts may contain secrets)
+*.sh
+
+# Database exports (may contain sensitive data)
 db-export.sql
+auth-schema.sql
+storage-schema.sql
+
+# On-premises config overrides
 onprem-*.js
-add-tools.sh
-add-studio.sh
+
+# SQL files with user data
+create-user.sql
