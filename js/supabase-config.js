@@ -1,6 +1,6 @@
-// Supabase Configuration for Glass Aero Production Tracking
+// Supabase Configuration for Glass Aero Production Tracking (On-Premises)
 (function() {
-  const SUPABASE_URL = 'https://avemar-db.duckdns.org';
+  const SUPABASE_URL = 'http://10.0.0.106:8300';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNjQxNzY5MjAwLCJleHAiOjE3OTk1MzU2MDB9.Z7TQV4VxWaN_eGuMgccr_8q55wyu2rjBQhlwU_w3xJE';
 
   if (!window.supabase || !window.supabase.createClient) {
