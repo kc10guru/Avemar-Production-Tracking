@@ -11,5 +11,10 @@ SITE=$(grep SITE_URL .env | cut -d= -f2)
 sed -i "s|const SUPABASE_URL = '.*'|const SUPABASE_URL = '$SITE'|" frontend/js/supabase-config.js
 sed -i "s|const SUPABASE_ANON_KEY = '.*'|const SUPABASE_ANON_KEY = '$ANON'|" frontend/js/supabase-config.js
 
-docker-compose restart frontend
+# Update nginx config
+cp deployment/nginx/nginx.conf nginx/nginx.conf
+
+# Full restart to clear all caches
+docker-compose down
+docker-compose up -d
 echo "Deploy complete"
