@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>New Repair Order - Glass Aero Production Tracking</title>
+  <title>New Work Order - Glass Aero Production Tracking</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,7 +50,7 @@
         </div>
         <div class="flex items-center gap-6">
           <a href="index.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-chart-line mr-2"></i>Dashboard</a>
-          <a href="repair-orders.html" class="text-glassAero-gold font-medium"><i class="fas fa-clipboard-list mr-2"></i>Repair Orders</a>
+          <a href="repair-orders.html" class="text-glassAero-gold font-medium"><i class="fas fa-clipboard-list mr-2"></i>Work Orders</a>
           <a href="inventory.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-boxes-stacked mr-2"></i>Inventory</a>
           <a href="bom.html" data-admin-only class="text-gray-300 hover:text-white transition"><i class="fas fa-list-check mr-2"></i>BOM</a>
           <a href="reports.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-file-chart-line mr-2"></i>Reports</a>
@@ -65,12 +65,26 @@
     <div class="flex items-center gap-4 mb-8">
       <a href="repair-orders.html" class="text-gray-400 hover:text-white transition"><i class="fas fa-arrow-left"></i></a>
       <div>
-        <h2 class="text-3xl font-bold mb-1">New Repair Order</h2>
-        <p class="text-gray-400">Create a new windshield repair order</p>
+        <h2 class="text-3xl font-bold mb-1">New Work Order</h2>
+        <p class="text-gray-400">Create a new windshield work order</p>
       </div>
     </div>
 
     <form onsubmit="handleSubmit(event)" class="space-y-6">
+
+      <!-- WO Number -->
+      <div class="stat-card rounded-2xl p-6">
+        <h3 class="text-lg font-semibold mb-4"><i class="fas fa-hashtag text-glassAero-gold mr-2"></i>Work Order Number</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">WO Number <span class="text-red-400">*</span></label>
+            <input type="text" id="woNumber" required
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-glassAero-gold"
+              placeholder="Enter work order number">
+            <div id="woNumberStatus" class="mt-1 text-xs hidden"></div>
+          </div>
+        </div>
+      </div>
 
       <!-- Customer & Contract Info -->
       <div class="stat-card rounded-2xl p-6">
@@ -184,7 +198,7 @@
             <label class="block text-sm text-gray-400 mb-1">Notes</label>
             <textarea id="notes" rows="3"
               class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-glassAero-gold resize-none"
-              placeholder="Any additional notes about this repair order..."></textarea>
+              placeholder="Any additional notes about this work order..."></textarea>
           </div>
         </div>
       </div>
@@ -196,7 +210,7 @@
       <div class="flex items-center justify-end gap-4">
         <a href="repair-orders.html" class="px-6 py-3 text-gray-400 hover:text-white transition">Cancel</a>
         <button type="submit" id="submitBtn" class="bg-glassAero-gold hover:bg-amber-600 text-black px-8 py-3 rounded-xl font-semibold transition flex items-center gap-2">
-          <i class="fas fa-save"></i> Create Repair Order
+          <i class="fas fa-save"></i> Create Work Order
         </button>
       </div>
     </form>
@@ -204,8 +218,8 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase-config.js?v=3"></script>
+  <script src="js/supabase-config.js?v=4"></script>
   <script src="js/auth.js?v=2"></script>
-  <script src="js/new-repair-order.js?v=3"></script>
+  <script src="js/new-repair-order.js?v=4"></script>
 </body>
 </html>

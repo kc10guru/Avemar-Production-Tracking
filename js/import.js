@@ -1,4 +1,4 @@
-// Import Repair Orders page logic
+// Import Work Orders page logic
 const GLASS_STAGE = 7;
 
 function isCRJPart(partNumber) {
@@ -73,7 +73,7 @@ function downloadTemplate() {
   ws['!cols'] = headers.map(h => ({ wch: Math.max(h.length + 2, 18) }));
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Repair Orders');
+  XLSX.utils.book_append_sheet(wb, ws, 'Work Orders');
   XLSX.writeFile(wb, 'Glass_Aero_Import_Template.xlsx');
 }
 
@@ -162,7 +162,7 @@ async function importAll() {
   const validRows = parsedRows.filter(r => r._valid);
   if (validRows.length === 0) return;
 
-  if (!confirm(`Import ${validRows.length} repair orders? Rows with errors will be skipped.`)) return;
+  if (!confirm(`Import ${validRows.length} work orders? Rows with errors will be skipped.`)) return;
 
   const btn = document.getElementById('importBtn');
   btn.disabled = true;
@@ -244,7 +244,7 @@ async function importSingleOrder(row) {
   }
 
   const saved = await db.saveRepairOrder(orderData);
-  if (!saved) throw new Error('Failed to save repair order');
+  if (!saved) throw new Error('Failed to save work order');
 
   // Create stage history entries for all stages up to and including currentStage
   const baseTime = dateReceived ? new Date(dateReceived) : new Date();

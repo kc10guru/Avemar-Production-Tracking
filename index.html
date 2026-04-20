@@ -57,7 +57,7 @@
         <div class="flex items-center gap-6">
           <a href="index.html" class="text-glassAero-gold font-medium"><i class="fas fa-chart-line mr-2"></i>Dashboard</a>
           <a href="scan.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-barcode mr-2"></i>Scan</a>
-          <a href="repair-orders.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-clipboard-list mr-2"></i>Repair Orders</a>
+          <a href="repair-orders.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-clipboard-list mr-2"></i>Work Orders</a>
           <a href="inventory.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-boxes-stacked mr-2"></i>Inventory</a>
           <a href="bom.html" data-admin-only class="text-gray-300 hover:text-white transition"><i class="fas fa-list-check mr-2"></i>BOM</a>
           <a href="reports.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-file-chart-line mr-2"></i>Reports</a>
@@ -86,7 +86,7 @@
           <i class="fas fa-barcode"></i> Scan & Advance
         </a>
         <a href="new-repair-order.html" class="bg-glassAero-gold hover:bg-amber-600 text-black px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2">
-          <i class="fas fa-plus"></i> New Repair Order
+          <i class="fas fa-plus"></i> New Work Order
         </a>
       </div>
     </div>
@@ -155,10 +155,10 @@
     <!-- Two Column Layout -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      <!-- Recent Repair Orders -->
+      <!-- Recent Work Orders -->
       <div class="lg:col-span-2 stat-card rounded-2xl p-6">
         <div class="flex items-center justify-between mb-6">
-          <h3 class="text-xl font-semibold"><i class="fas fa-clock text-glassAero-sky mr-2"></i>Recent Repair Orders</h3>
+          <h3 class="text-xl font-semibold"><i class="fas fa-clock text-glassAero-sky mr-2"></i>Recent Work Orders</h3>
           <a href="repair-orders.html" class="text-glassAero-sky text-sm hover:underline">View All</a>
         </div>
         <div class="space-y-3" id="recentOrders">
@@ -188,7 +188,7 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase-config.js?v=3"></script>
+  <script src="js/supabase-config.js?v=4"></script>
   <script src="js/auth.js?v=2"></script>
 
   <script>
@@ -268,7 +268,7 @@
       if (orders.length === 0) {
         container.innerHTML = `
           <div class="text-gray-400 text-center py-8">
-            No active repair orders.
+            No active work orders.
             <a href="new-repair-order.html" class="text-glassAero-gold hover:underline ml-1">Create your first order</a>
           </div>`;
         return;

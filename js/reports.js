@@ -138,7 +138,7 @@ function renderBehindSchedule(behindSchedule) {
     <table class="w-full text-sm">
       <thead>
         <tr class="border-b border-white/10">
-          <th class="text-left py-2 text-xs text-gray-400 font-medium">RO Number</th>
+          <th class="text-left py-2 text-xs text-gray-400 font-medium">WO Number</th>
           <th class="text-left py-2 text-xs text-gray-400 font-medium">Customer</th>
           <th class="text-left py-2 text-xs text-gray-400 font-medium">Current Stage</th>
           <th class="text-right py-2 text-xs text-gray-400 font-medium">Time in Stage</th>

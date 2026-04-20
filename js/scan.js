@@ -57,7 +57,7 @@ async function lookupOrder(roNumber) {
 
   // Nothing found
   hideAllStates();
-  document.getElementById('errorMessage').textContent = `No repair order found for "${trimmed}"`;
+  document.getElementById('errorMessage').textContent = `No work order found for "${trimmed}"`;
   document.getElementById('errorState').classList.remove('hidden');
   document.getElementById('scanInput').value = '';
   document.getElementById('scanInput').focus();
@@ -247,6 +247,7 @@ async function advanceOrder() {
         <div class="text-center py-6">
           <i class="fas fa-check-circle text-6xl text-emerald-400 mb-4"></i>
           <p class="text-xl font-bold text-emerald-400">${order.roNumber} Complete!</p>
+
           <p class="text-gray-400 mt-2">Ready for next scan</p>
         </div>
       `;

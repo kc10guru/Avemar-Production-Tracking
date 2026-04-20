@@ -1,4 +1,4 @@
-// Repair Orders list page logic
+// Work Orders list page logic
 let allOrders = [];
 let stages = [];
 let parts = [];
@@ -55,11 +55,11 @@ function renderOrders() {
   const tbody = document.getElementById('ordersTable');
   const countEl = document.getElementById('resultCount');
 
-  countEl.textContent = `${allOrders.length} repair order${allOrders.length !== 1 ? 's' : ''} found`;
+  countEl.textContent = `${allOrders.length} work order${allOrders.length !== 1 ? 's' : ''} found`;
 
   if (allOrders.length === 0) {
     tbody.innerHTML = `<tr><td colspan="7" class="py-12 text-center text-gray-400">
-      No repair orders found. <a href="new-repair-order.html" class="text-glassAero-gold hover:underline">Create one</a>
+      No work orders found. <a href="new-repair-order.html" class="text-glassAero-gold hover:underline">Create one</a>
     </td></tr>`;
     return;
   }

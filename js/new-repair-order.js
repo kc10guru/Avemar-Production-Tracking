@@ -1,4 +1,4 @@
-// New Repair Order form logic
+// New Work Order form logic
 const GLASS_STAGE = 7;
 
 function isCRJPart(partNumber) {
@@ -18,6 +18,29 @@ async function loadForm() {
   // Default date received to today
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('dateReceived').value = today;
+
+  // Live duplicate check on WO number field
+  let woCheckTimeout;
+  document.getElementById('woNumber').addEventListener('input', () => {
+    clearTimeout(woCheckTimeout);
+    const statusEl = document.getElementById('woNumberStatus');
+    const val = document.getElementById('woNumber').value.trim();
+    if (!val) {
+      statusEl.classList.add('hidden');
+      return;
+    }
+    woCheckTimeout = setTimeout(async () => {
+      const isDup = await db.checkDuplicateWoNumber(val);
+      statusEl.classList.remove('hidden');
+      if (isDup) {
+        statusEl.className = 'mt-1 text-xs text-red-400';
+        statusEl.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i>This WO number already exists';
+      } else {
+        statusEl.className = 'mt-1 text-xs text-emerald-400';
+        statusEl.innerHTML = '<i class="fas fa-check-circle mr-1"></i>WO number is available';
+      }
+    }, 400);
+  });
 }
 
 function showStatus(message, isError = false) {
@@ -37,7 +60,28 @@ async function handleSubmit(event) {
   btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating...';
 
   try {
+    const woNumber = document.getElementById('woNumber').value.trim();
+
+    if (!woNumber) {
+      showStatus('WO number is required.', true);
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save mr-2"></i>Create Work Order';
+      document.getElementById('woNumber').focus();
+      return;
+    }
+
+    // Duplicate check before saving
+    const isDuplicate = await db.checkDuplicateWoNumber(woNumber);
+    if (isDuplicate) {
+      showStatus(`WO number "${woNumber}" already exists. Please use a unique WO number.`, true);
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save mr-2"></i>Create Work Order';
+      document.getElementById('woNumber').focus();
+      return;
+    }
+
     const order = {
+      roNumber: woNumber,
       customerName: document.getElementById('customerName').value.trim(),
       partNumber: document.getElementById('partNumber').value,
       serialNumber: document.getElementById('serialNumber').value.trim(),
@@ -63,9 +107,9 @@ async function handleSubmit(event) {
 
     const saved = await db.saveRepairOrder(order);
     if (!saved) {
-      showStatus('Failed to create repair order. Please try again.', true);
+      showStatus('Failed to create work order. Please try again.', true);
       btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-save mr-2"></i>Create Repair Order';
+      btn.innerHTML = '<i class="fas fa-save mr-2"></i>Create Work Order';
       return;
     }
 
@@ -79,17 +123,17 @@ async function handleSubmit(event) {
       enteredAt: new Date().toISOString()
     });
 
-    showStatus(`Repair order ${saved.roNumber} created successfully! Redirecting...`);
+    showStatus(`Work order ${saved.roNumber} created successfully! Redirecting...`);
 
     setTimeout(() => {
       window.location.href = `repair-order-detail.html?id=${saved.id}`;
     }, 1500);
 
   } catch (error) {
-    console.error('Error creating repair order:', error);
+    console.error('Error creating work order:', error);
     showStatus('An error occurred. Please try again.', true);
     btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-save mr-2"></i>Create Repair Order';
+    btn.innerHTML = '<i class="fas fa-save mr-2"></i>Create Work Order';
   }
 }
 

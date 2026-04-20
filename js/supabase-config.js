@@ -34,26 +34,15 @@
     return obj;
   }
 
-  // Generate sequential RO number: RO-YYYYMMDD-0001, 0002, etc.
-  async function generateRoNumber() {
-    const now = new Date();
-    const datePart = now.toISOString().slice(0, 10).replace(/-/g, '');
-    const prefix = `RO-${datePart}-`;
-
-    const { data } = await window.supabaseClient
+  // Check if a WO number already exists in the database
+  async function checkDuplicateWoNumber(woNumber) {
+    const { data, error } = await window.supabaseClient
       .from('repair_orders')
-      .select('ro_number')
-      .like('ro_number', `${prefix}%`)
-      .order('ro_number', { ascending: false })
+      .select('id')
+      .ilike('ro_number', woNumber.trim())
       .limit(1);
-
-    let seq = 1;
-    if (data && data.length > 0) {
-      const lastNum = parseInt(data[0].ro_number.split('-').pop(), 10);
-      if (!isNaN(lastNum)) seq = lastNum + 1;
-    }
-
-    return `${prefix}${String(seq).padStart(4, '0')}`;
+    if (error) { console.error('Error checking duplicate WO:', error); return false; }
+    return data && data.length > 0;
   }
 
   window.db = {
@@ -153,13 +142,20 @@
       return (data || []).map(toCamelCase);
     },
 
+    async checkDuplicateWoNumber(woNumber) {
+      return checkDuplicateWoNumber(woNumber);
+    },
+
     async saveRepairOrder(order) {
       const snakeData = toSnakeCase(order);
       delete snakeData.id;
-      if (!snakeData.ro_number) snakeData.ro_number = await generateRoNumber();
+      if (!snakeData.ro_number) {
+        console.error('WO number is required');
+        return null;
+      }
       const { data, error } = await window.supabaseClient
         .from('repair_orders').insert(snakeData).select();
-      if (error) { console.error('Error saving repair order:', error); return null; }
+      if (error) { console.error('Error saving work order:', error); return null; }
       return toCamelCase(data[0]);
     },
 

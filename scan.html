@@ -55,9 +55,9 @@
   <main class="flex-1 p-4 flex flex-col">
     <!-- Scan input -->
     <div class="stat-card rounded-2xl p-6 mb-4">
-      <label class="block text-sm text-gray-400 mb-2">Scan or type RO number</label>
+      <label class="block text-sm text-gray-400 mb-2">Scan or type WO number</label>
       <div class="flex gap-3">
-        <input type="text" id="scanInput" placeholder="RO-20260301-0001"
+        <input type="text" id="scanInput" placeholder="Enter WO number"
           class="flex-1 bg-white/5 border-2 border-white/20 rounded-xl px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-glassAero-gold"
           autocomplete="off" autocapitalize="off" autofocus>
         <button type="button" id="lookupBtn" class="bg-glassAero-gold hover:bg-amber-600 text-black px-6 py-4 rounded-xl font-semibold transition flex-shrink-0">
@@ -76,7 +76,7 @@
     <!-- Empty / ready state -->
     <div id="readyState" class="flex-1 flex flex-col items-center justify-center text-center py-8">
       <i class="fas fa-barcode-scan text-6xl text-gray-600 mb-4"></i>
-      <p class="text-gray-400 text-lg">Scan a barcode or enter RO number above</p>
+      <p class="text-gray-400 text-lg">Scan a barcode or enter WO number above</p>
       <p class="text-gray-500 text-sm mt-2">Then tap Advance to move to next stage</p>
     </div>
 
@@ -99,8 +99,8 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase-config.js?v=3"></script>
+  <script src="js/supabase-config.js?v=4"></script>
   <script src="js/auth.js?v=2"></script>
-  <script src="js/scan.js?v=2"></script>
+  <script src="js/scan.js?v=3"></script>
 </body>
 </html>

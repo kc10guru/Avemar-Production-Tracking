@@ -1,4 +1,4 @@
-// Repair Order Detail page logic
+// Work Order Detail page logic
 let order = null;
 let stages = [];
 let history = [];
@@ -52,7 +52,7 @@ async function loadPage() {
   ]);
 
   if (!order) {
-    document.getElementById('roTitle').textContent = 'Order Not Found';
+    document.getElementById('roTitle').textContent = 'Work Order Not Found';
     return;
   }
 
@@ -673,7 +673,7 @@ async function advanceStage() {
     hideAdvanceModal();
 
     if (isComplete) {
-      alert(`Repair order ${order.roNumber} is now complete!`);
+      alert(`Work order ${order.roNumber} is now complete!`);
       window.location.href = 'index.html';
       return;
     }
@@ -853,6 +853,7 @@ async function confirmHold() {
 async function resumeOrder() {
   if (!confirm(`Resume "${order.roNumber}" and return it to active production?`)) return;
 
+
   const btn = document.getElementById('resumeBtn');
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Resuming...';
@@ -926,13 +927,13 @@ function printBarcodeLabel() {
 // ─── Delete Order ───────────────────────────────────────
 async function confirmDeleteOrder() {
   if (!currentUser || !isAdmin(currentUser)) {
-    alert('Only administrators can delete repair orders.');
+    alert('Only administrators can delete work orders.');
     return;
   }
   const confirmed = confirm(
-    `DELETE repair order "${order.roNumber}"?\n\n` +
+    `DELETE work order "${order.roNumber}"?\n\n` +
     `This will permanently remove:\n` +
-    `• The repair order and all its data\n` +
+    `• The work order and all its data\n` +
     `• All stage history\n` +
     `• All hold history\n` +
     `• All uploaded documents\n` +
@@ -951,14 +952,14 @@ async function confirmDeleteOrder() {
   try {
     const success = await db.deleteRepairOrder(order.id);
     if (success) {
-      alert(`Repair order ${order.roNumber} has been deleted.`);
+      alert(`Work order ${order.roNumber} has been deleted.`);
       window.location.href = 'repair-orders.html';
     } else {
-      alert('Failed to delete repair order. Please try again.');
+      alert('Failed to delete work order. Please try again.');
     }
   } catch (error) {
     console.error('Error deleting order:', error);
-    alert('Failed to delete repair order. Please try again.');
+    alert('Failed to delete work order. Please try again.');
   }
 
   btn.disabled = false;
