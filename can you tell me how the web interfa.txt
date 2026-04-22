@@ -1,0 +1,65 @@
+can you tell me how the web interface on this project works with the supbase on the VM ?
+
+Exploring the project to map how the web interface connects to Supabase and any VM-related configuration.
+
+Here is how this project wires the web UI to Supabase on the VM.
+
+Model: browser → Supabase APIs → PostgreSQL (no app server)
+There is no custom backend in this repo. Pages are static HTML/JS. The browser loads @supabase/supabase-js from the CDN, then js/supabase-config.js, which creates a single global client:
+
+
+supabase-config.js
+Lines 1-11
+// Supabase Configuration for Glass Aero Production Tracking
+(function() {
+  const SUPABASE_URL = 'https://avemar-db.duckdns.org';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNjQxNzY5MjAwLCJleHAiOjE3OTk1MzU2MDB9.Z7TQV4VxWaN_eGuMgccr_8q55wyu2rjBQhlwU_w3xJE';
+  if (!window.supabase || !window.supabase.createClient) {
+    console.error('Supabase library not loaded. Check your internet connection.');
+    return;
+  }
+  window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+Everything else (db.* helpers, auth.js, page scripts) calls window.supabaseClient: .from(...) for PostgREST, .auth for GoTrue, .storage for files, and channels for Realtime. Row-level security and JWT roles are enforced on the stack the same way as hosted Supabase.
+
+So the “integration” is: SUPABASE_URL is the public base URL of the self-hosted stack (here, a hostname that points at your VM). The client automatically hits /rest/v1/, /auth/v1/, /realtime/v1/, /storage/v1/ under that host.
+
+What runs on the VM (Docker)
+On the VM, deployment/docker-compose-full.yml defines the usual self-hosted pieces: Postgres (Supabase-flavored image), PostgREST, GoTrue, Realtime, Storage, Kong as the API gateway, plus nginx serving the static site and proxying those API paths to Kong:
+
+
+nginx.conf
+Lines 25-63
+        # Proxy REST API calls to Kong
+        location /rest/v1/ {
+            proxy_pass http://kong:8000/rest/v1/;
+            ...
+        }
+        # Proxy Auth calls to Kong
+        location /auth/v1/ {
+            proxy_pass http://kong:8000/auth/v1/;
+            ...
+        }
+        # Proxy Realtime WebSocket calls to Kong
+        location /realtime/v1/ {
+            proxy_pass http://kong:8000/realtime/v1/;
+            ...
+        }
+        # Proxy Storage calls to Kong
+        location /storage/v1/ {
+            proxy_pass http://kong:8000/storage/v1/;
+            ...
+        }
+Kong is published on the host (e.g. 8300:8000 in compose); nginx publishes 8080:80 for the combined “site + proxied APIs” when you use the full stack from the deployment folder.
+
+Two ways users can hit the same Supabase
+Frontend from GitHub Pages (or anywhere)
+The HTML still loads supabase-config.js with SUPABASE_URL = https://avemar-db.duckdns.org. The browser talks directly to whatever terminates TLS on the VM (reverse proxy / DuckDNS). That path must expose the same Supabase routes Kong would serve (/rest/v1, etc.), not only static files.
+
+Frontend served from the VM’s nginx (:8080)
+Same origin: you would set SUPABASE_URL to that base (e.g. http://your-vm:8080) so REST/Auth/Realtime/Storage go through the nginx locations above into Kong. The staging doc in the repo describes that pattern explicitly.
+
+What must line up for it to work
+SUPABASE_URL must match how browsers reach Kong’s routes (DuckDNS HTTPS vs local :8080, etc.).
+SUPABASE_ANON_KEY must be the JWT anon key whose signing secret matches JWT_SECRET in the VM .env (PostgREST/Auth/Realtime/Storage all depend on that).
+SITE_URL / auth redirects in GoTrue should match how users open the login page (documented in your on-prem guide).
+In short: the web UI is only static files plus the Supabase JS SDK; supabase-config.js points the SDK at your VM-hosted Supabase gateway; the VM’s Docker stack implements that gateway and database. There is no separate “app server” in between.

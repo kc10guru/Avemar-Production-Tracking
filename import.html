@@ -82,8 +82,9 @@
             </button>
           </div>
           <div class="mt-4 p-4 bg-white/5 rounded-xl">
-            <p class="text-xs text-gray-400 font-medium mb-2">Template Columns:</p>
+            <p class="text-xs text-gray-400 font-medium mb-2">Order Info Columns:</p>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-1 text-xs text-gray-500">
+              <span><i class="fas fa-asterisk text-red-400 text-[8px] mr-1"></i>ro_number (WO#)</span>
               <span><i class="fas fa-asterisk text-red-400 text-[8px] mr-1"></i>customer_name</span>
               <span><i class="fas fa-asterisk text-red-400 text-[8px] mr-1"></i>part_number</span>
               <span><i class="fas fa-asterisk text-red-400 text-[8px] mr-1"></i>serial_number</span>
@@ -102,7 +103,11 @@
               <span>contact_phone</span>
               <span>notes</span>
             </div>
-            <p class="text-xs text-red-400/60 mt-2"><i class="fas fa-asterisk text-[8px] mr-1"></i>= required field</p>
+            <p class="text-xs text-gray-400 font-medium mt-3 mb-2">Stage Selection Columns (Stages 2–18):</p>
+            <p class="text-xs text-gray-500 mb-1">For each stage, enter <span class="text-emerald-400 font-semibold">Y</span> if it applies or <span class="text-red-400 font-semibold">N</span> to skip. Leave blank = Y (applies).</p>
+            <p class="text-xs text-gray-500">These mirror the inspection checklist — set which stages each unit needs based on the work scope.</p>
+            <p class="text-xs text-yellow-400/70 mt-2"><i class="fas fa-info-circle text-[10px] mr-1"></i>Stage 1 (Receiving Inspection) and Stage 19 (Shipping) are always required</p>
+            <p class="text-xs text-red-400/60 mt-1"><i class="fas fa-asterisk text-[8px] mr-1"></i>= required field</p>
           </div>
         </div>
       </div>
@@ -160,11 +165,13 @@
               <table class="w-full text-sm">
                 <thead>
                   <tr class="border-b border-white/10">
-                    <th class="text-left py-3 px-3 text-xs text-gray-400 font-medium">Status</th>
+                    <th class="text-left py-3 px-3 text-xs text-gray-400 font-medium"></th>
+                    <th class="text-left py-3 px-3 text-xs text-gray-400 font-medium">WO#</th>
                     <th class="text-left py-3 px-3 text-xs text-gray-400 font-medium">Customer</th>
                     <th class="text-left py-3 px-3 text-xs text-gray-400 font-medium">Part Number</th>
                     <th class="text-left py-3 px-3 text-xs text-gray-400 font-medium">Serial</th>
                     <th class="text-left py-3 px-3 text-xs text-gray-400 font-medium">Stage</th>
+                    <th class="text-left py-3 px-3 text-xs text-gray-400 font-medium">Skipped</th>
                     <th class="text-left py-3 px-3 text-xs text-gray-400 font-medium">Issues</th>
                   </tr>
                 </thead>
@@ -182,6 +189,6 @@
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="js/supabase-config.js?v=4"></script>
   <script src="js/auth.js?v=2"></script>
-  <script src="js/import.js?v=3"></script>
+  <script src="js/import.js?v=4"></script>
 </body>
 </html>
