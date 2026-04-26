@@ -61,6 +61,7 @@
           <a href="inventory.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-boxes-stacked mr-2"></i>Inventory</a>
           <a href="bom.html" data-admin-only class="text-gray-300 hover:text-white transition"><i class="fas fa-list-check mr-2"></i>BOM</a>
           <a href="reports.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-file-chart-line mr-2"></i>Reports</a>
+          <a href="support-tickets.html" data-admin-only class="text-gray-300 hover:text-white transition"><i class="fas fa-life-ring mr-2"></i>Tickets</a>
           <a href="settings.html" data-admin-only class="text-gray-300 hover:text-white transition"><i class="fas fa-cog mr-2"></i>Settings</a>
         </div>
       </div>
@@ -82,6 +83,9 @@
         <p class="text-gray-400">Windshield repair tracking overview</p>
       </div>
       <div class="flex gap-3">
+        <button onclick="openTicketModal()" class="bg-white/10 hover:bg-white/20 text-white px-5 py-3 rounded-xl font-semibold transition flex items-center gap-2 border border-white/10">
+          <i class="fas fa-life-ring"></i> Report Issue
+        </button>
         <a href="scan.html" class="bg-glassAero-sky hover:bg-sky-600 text-white px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2">
           <i class="fas fa-barcode"></i> Scan & Advance
         </a>
@@ -180,6 +184,68 @@
     </div>
   </main>
 
+  <!-- Report Issue Modal -->
+  <div id="ticketModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+    <div class="bg-glassAero-slate border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl">
+      <div class="flex items-center justify-between p-6 border-b border-white/10">
+        <h3 class="text-xl font-bold text-white"><i class="fas fa-life-ring text-glassAero-gold mr-2"></i>Report an Issue</h3>
+        <button onclick="closeTicketModal()" class="text-gray-400 hover:text-white transition text-xl"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="ticketForm" onsubmit="submitTicket(event)" class="p-6 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Type</label>
+            <select id="ticketType" required class="w-full bg-glassAero-navy border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm focus:border-glassAero-sky focus:outline-none">
+              <option value="Bug Report">Bug Report</option>
+              <option value="Feature Request">Feature Request</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Priority</label>
+            <select id="ticketPriority" required class="w-full bg-glassAero-navy border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm focus:border-glassAero-sky focus:outline-none">
+              <option value="Low">Low</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-400 mb-1">Subject</label>
+          <input type="text" id="ticketSubject" required maxlength="200" placeholder="Brief summary of the issue"
+            class="w-full bg-glassAero-navy border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm focus:border-glassAero-sky focus:outline-none placeholder-gray-600">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-400 mb-1">Description</label>
+          <textarea id="ticketDescription" required rows="4" placeholder="Describe the issue or suggestion in detail..."
+            class="w-full bg-glassAero-navy border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm focus:border-glassAero-sky focus:outline-none placeholder-gray-600 resize-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-400 mb-1">Page (where did this happen?)</label>
+          <select id="ticketPage" class="w-full bg-glassAero-navy border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm focus:border-glassAero-sky focus:outline-none">
+            <option value="">-- Select page --</option>
+            <option value="Dashboard">Dashboard</option>
+            <option value="Work Orders">Work Orders</option>
+            <option value="Work Order Detail">Work Order Detail</option>
+            <option value="New Work Order">New Work Order</option>
+            <option value="Scan & Advance">Scan & Advance</option>
+            <option value="Inventory">Inventory</option>
+            <option value="BOM">BOM</option>
+            <option value="Reports">Reports</option>
+            <option value="Import">Import</option>
+            <option value="Settings">Settings</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" onclick="closeTicketModal()" class="flex-1 bg-white/10 hover:bg-white/20 text-white py-2.5 rounded-lg font-semibold transition text-sm">Cancel</button>
+          <button type="submit" id="ticketSubmitBtn" class="flex-1 bg-glassAero-sky hover:bg-sky-600 text-white py-2.5 rounded-lg font-semibold transition text-sm">
+            <i class="fas fa-paper-plane mr-2"></i>Submit Ticket
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="border-t border-white/10 mt-12 py-6">
     <div class="max-w-7xl mx-auto px-6 text-center text-gray-500 text-sm">
@@ -188,7 +254,7 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase-config.js?v=4"></script>
+  <script src="js/supabase-config.js?v=5"></script>
   <script src="js/auth.js?v=2"></script>
 
   <script>
@@ -337,6 +403,53 @@
     function setupRealtime() {
       db.subscribeToRepairOrders(() => loadDashboard());
       db.subscribeToSubcomponents(() => loadDashboard());
+    }
+
+    // ─── Ticket Modal ──────────────────────────────────────
+    function openTicketModal() {
+      document.getElementById('ticketModal').classList.remove('hidden');
+      document.getElementById('ticketForm').reset();
+      document.getElementById('ticketPriority').value = 'Medium';
+    }
+
+    function closeTicketModal() {
+      document.getElementById('ticketModal').classList.add('hidden');
+    }
+
+    async function submitTicket(e) {
+      e.preventDefault();
+      const btn = document.getElementById('ticketSubmitBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting...';
+
+      try {
+        const user = await getCurrentUser();
+        const ticket = {
+          reportedBy: user?.id || null,
+          reporterEmail: user?.email || 'unknown',
+          reporterName: user?.user_metadata?.full_name || user?.email || 'Unknown',
+          type: document.getElementById('ticketType').value,
+          priority: document.getElementById('ticketPriority').value,
+          subject: document.getElementById('ticketSubject').value.trim(),
+          description: document.getElementById('ticketDescription').value.trim(),
+          pageUrl: document.getElementById('ticketPage').value || null,
+          status: 'Open'
+        };
+
+        const saved = await db.saveSupportTicket(ticket);
+        if (saved) {
+          closeTicketModal();
+          alert(`Ticket ${saved.ticketNumber} submitted successfully! An admin will review it shortly.`);
+        } else {
+          alert('Failed to submit ticket. Please try again.');
+        }
+      } catch (err) {
+        console.error('Error submitting ticket:', err);
+        alert('Error submitting ticket. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Submit Ticket';
+      }
     }
 
     document.addEventListener('DOMContentLoaded', async () => {

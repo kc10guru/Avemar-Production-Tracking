@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support Tickets - Glass Aero Production Tracking</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { 'outfit': ['Outfit', 'sans-serif'] },
+          colors: {
+            'glassAero': {
+              'navy': '#0a1628', 'slate': '#1e293b', 'steel': '#334155',
+              'sky': '#0ea5e9', 'gold': '#f59e0b', 'emerald': '#10b981',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Outfit', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #0a1628 0%, #1e293b 50%, #0f172a 100%); }
+    .stat-card { background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255, 255, 255, 0.1); }
+    select { background-color: #1e293b; color: #f1f5f9; }
+    select option { background-color: #1e293b; color: #f1f5f9; }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+
+  <!-- Navigation -->
+  <nav class="bg-glassAero-navy/80 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-glassAero-gold to-orange-600 rounded-lg flex items-center justify-center">
+            <i class="fas fa-industry text-white text-lg"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-white">Glass Aero</h1>
+            <p class="text-xs text-gray-400">Production Tracking</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-6">
+          <a href="index.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-chart-line mr-2"></i>Dashboard</a>
+          <a href="scan.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-barcode mr-2"></i>Scan</a>
+          <a href="repair-orders.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-clipboard-list mr-2"></i>Work Orders</a>
+          <a href="inventory.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-boxes-stacked mr-2"></i>Inventory</a>
+          <a href="bom.html" data-admin-only class="text-gray-300 hover:text-white transition"><i class="fas fa-list-check mr-2"></i>BOM</a>
+          <a href="reports.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-file-chart-line mr-2"></i>Reports</a>
+          <a href="support-tickets.html" data-admin-only class="text-glassAero-gold font-medium"><i class="fas fa-life-ring mr-2"></i>Tickets</a>
+          <a href="settings.html" data-admin-only class="text-gray-300 hover:text-white transition"><i class="fas fa-cog mr-2"></i>Settings</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Page Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h2 class="text-3xl font-bold mb-2">Support Tickets</h2>
+        <p class="text-gray-400">Manage reported issues and feature requests</p>
+      </div>
+      <div class="flex gap-3 items-center">
+        <div class="flex items-center gap-2">
+          <label class="text-sm text-gray-400">Status:</label>
+          <select id="filterStatus" onchange="loadTickets()" class="bg-glassAero-navy border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-glassAero-sky focus:outline-none">
+            <option value="">All</option>
+            <option value="Open" selected>Open</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Closed">Closed</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-sm text-gray-400">Type:</label>
+          <select id="filterType" onchange="loadTickets()" class="bg-glassAero-navy border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-glassAero-sky focus:outline-none">
+            <option value="">All</option>
+            <option value="Bug Report">Bug Report</option>
+            <option value="Feature Request">Feature Request</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="grid grid-cols-4 gap-4 mb-8" id="ticketStats">
+      <div class="stat-card rounded-xl p-4 text-center cursor-pointer" onclick="setFilter('Open')">
+        <div class="text-2xl font-bold text-red-400" id="statOpen">--</div>
+        <div class="text-xs text-gray-400 mt-1">Open</div>
+      </div>
+      <div class="stat-card rounded-xl p-4 text-center cursor-pointer" onclick="setFilter('In Progress')">
+        <div class="text-2xl font-bold text-yellow-400" id="statInProgress">--</div>
+        <div class="text-xs text-gray-400 mt-1">In Progress</div>
+      </div>
+      <div class="stat-card rounded-xl p-4 text-center cursor-pointer" onclick="setFilter('Resolved')">
+        <div class="text-2xl font-bold text-emerald-400" id="statResolved">--</div>
+        <div class="text-xs text-gray-400 mt-1">Resolved</div>
+      </div>
+      <div class="stat-card rounded-xl p-4 text-center cursor-pointer" onclick="setFilter('Closed')">
+        <div class="text-2xl font-bold text-gray-400" id="statClosed">--</div>
+        <div class="text-xs text-gray-400 mt-1">Closed</div>
+      </div>
+    </div>
+
+    <!-- Tickets List -->
+    <div class="stat-card rounded-2xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-white/10">
+            <th class="text-left py-4 px-4 text-xs text-gray-400 font-medium">Ticket</th>
+            <th class="text-left py-4 px-4 text-xs text-gray-400 font-medium">Type</th>
+            <th class="text-left py-4 px-4 text-xs text-gray-400 font-medium">Priority</th>
+            <th class="text-left py-4 px-4 text-xs text-gray-400 font-medium">Subject</th>
+            <th class="text-left py-4 px-4 text-xs text-gray-400 font-medium">Reporter</th>
+            <th class="text-left py-4 px-4 text-xs text-gray-400 font-medium">Status</th>
+            <th class="text-left py-4 px-4 text-xs text-gray-400 font-medium">Date</th>
+            <th class="text-left py-4 px-4 text-xs text-gray-400 font-medium"></th>
+          </tr>
+        </thead>
+        <tbody id="ticketsTable">
+          <tr><td colspan="8" class="text-center py-12 text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading tickets...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Ticket Detail Modal -->
+  <div id="detailModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+    <div class="bg-glassAero-slate border border-white/10 rounded-2xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between p-6 border-b border-white/10">
+        <h3 class="text-xl font-bold text-white" id="detailTitle">Ticket Details</h3>
+        <button onclick="closeDetail()" class="text-gray-400 hover:text-white transition text-xl"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="p-6 space-y-5" id="detailBody"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js?v=5"></script>
+  <script src="js/auth.js?v=2"></script>
+  <script src="js/support-tickets.js?v=1"></script>
+</body>
+</html>

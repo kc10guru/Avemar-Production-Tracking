@@ -678,6 +678,65 @@
       return true;
     },
 
+    // ─── Support Tickets ─────────────────────────────────────
+    async getSupportTickets(filters = {}) {
+      let query = window.supabaseClient
+        .from('support_tickets').select('*')
+        .order('created_at', { ascending: false });
+      if (filters.status) query = query.eq('status', filters.status);
+      if (filters.type) query = query.eq('type', filters.type);
+      const { data, error } = await query;
+      if (error) { console.error('Error fetching support tickets:', error); return []; }
+      return toCamelCase(data);
+    },
+
+    async getSupportTicket(id) {
+      const { data, error } = await window.supabaseClient
+        .from('support_tickets').select('*').eq('id', id).single();
+      if (error) { console.error('Error fetching support ticket:', error); return null; }
+      return toCamelCase(data);
+    },
+
+    async getOpenTicketCount() {
+      const { count, error } = await window.supabaseClient
+        .from('support_tickets').select('*', { count: 'exact', head: true })
+        .in('status', ['Open', 'In Progress']);
+      if (error) { console.error('Error counting open tickets:', error); return 0; }
+      return count || 0;
+    },
+
+    async getNextTicketNumber() {
+      const { data, error } = await window.supabaseClient
+        .from('support_tickets').select('ticket_number')
+        .order('created_at', { ascending: false }).limit(1);
+      if (error || !data || data.length === 0) return 'TKT-0001';
+      const last = data[0].ticket_number;
+      const num = parseInt(last.replace('TKT-', ''), 10) || 0;
+      return `TKT-${String(num + 1).padStart(4, '0')}`;
+    },
+
+    async saveSupportTicket(ticket) {
+      const snakeData = toSnakeCase(ticket);
+      delete snakeData.id;
+      if (!snakeData.ticket_number) {
+        snakeData.ticket_number = await this.getNextTicketNumber();
+      }
+      const { data, error } = await window.supabaseClient
+        .from('support_tickets').insert(snakeData).select();
+      if (error) { console.error('Error saving support ticket:', error); return null; }
+      return toCamelCase(data[0]);
+    },
+
+    async updateSupportTicket(id, updates) {
+      const snakeData = toSnakeCase(updates);
+      delete snakeData.id;
+      snakeData.updated_at = new Date().toISOString();
+      const { data, error } = await window.supabaseClient
+        .from('support_tickets').update(snakeData).eq('id', id).select();
+      if (error) { console.error('Error updating support ticket:', error); return null; }
+      return toCamelCase(data[0]);
+    },
+
     // ─── Realtime Subscriptions ─────────────────────────────
     subscribeToRepairOrders(callback) {
       return window.supabaseClient
