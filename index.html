@@ -254,8 +254,10 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="js/supabase-config.js?v=5"></script>
   <script src="js/auth.js?v=2"></script>
+  <script src="js/email-notify.js?v=1"></script>
 
   <script>
     async function loadDashboard() {
@@ -439,6 +441,7 @@
         const saved = await db.saveSupportTicket(ticket);
         if (saved) {
           closeTicketModal();
+          emailNotify.notifyNewTicket(saved);
           alert(`Ticket ${saved.ticketNumber} submitted successfully! An admin will review it shortly.`);
         } else {
           alert('Failed to submit ticket. Please try again.');

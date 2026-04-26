@@ -178,6 +178,9 @@ async function saveTicketUpdate() {
 
     const saved = await db.updateSupportTicket(currentTicketId, updates);
     if (saved) {
+      if (newStatus === 'Resolved') {
+        emailNotify.notifyTicketResolved(saved);
+      }
       closeDetail();
       await loadTickets();
     } else {

@@ -155,6 +155,45 @@
       </div>
     </div>
 
+    <!-- Email Notifications -->
+    <div class="stat-card rounded-2xl p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold"><i class="fas fa-envelope text-purple-400 mr-2"></i>Email Notifications (Support Tickets)</h3>
+        <button onclick="saveEmailConfig()" id="saveEmailBtn" class="bg-glassAero-emerald hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold transition text-sm">
+          <i class="fas fa-save mr-1"></i>Save Changes
+        </button>
+      </div>
+      <p class="text-gray-400 text-sm mb-4">Configure EmailJS to receive email alerts when tickets are submitted and notify reporters when resolved. <a href="https://www.emailjs.com/" target="_blank" class="text-glassAero-sky hover:underline">Create a free EmailJS account</a> to get started.</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Your Email (notifications sent here)</label>
+          <input type="email" id="emailNotifyTo" placeholder="you@gmail.com"
+            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-glassAero-gold placeholder-gray-600">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">EmailJS Public Key</label>
+          <input type="text" id="emailPublicKey" placeholder="e.g., aBcDeFgHiJkLm"
+            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-glassAero-gold placeholder-gray-600">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">EmailJS Service ID</label>
+          <input type="text" id="emailServiceId" placeholder="e.g., service_abc123"
+            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-glassAero-gold placeholder-gray-600">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">EmailJS Template ID</label>
+          <input type="text" id="emailTemplateId" placeholder="e.g., template_xyz789"
+            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-glassAero-gold placeholder-gray-600">
+        </div>
+      </div>
+      <div class="mt-4 p-3 bg-white/5 rounded-lg">
+        <p class="text-xs text-gray-400 mb-2"><i class="fas fa-info-circle text-glassAero-sky mr-1"></i>EmailJS Template Setup</p>
+        <p class="text-xs text-gray-500">Create a template at emailjs.com with these variables: <code class="text-gray-300">{{to_email}}</code>, <code class="text-gray-300">{{from_name}}</code>, <code class="text-gray-300">{{subject}}</code>, <code class="text-gray-300">{{message}}</code></p>
+        <p class="text-xs text-gray-500 mt-1">Set "To Email" to <code class="text-gray-300">{{to_email}}</code>, "Subject" to <code class="text-gray-300">{{subject}}</code>, and paste <code class="text-gray-300">{{{message}}}</code> (triple braces for HTML) in the body.</p>
+      </div>
+      <div id="emailTestResult" class="hidden mt-3"></div>
+    </div>
+
     <!-- Database Info -->
     <div class="stat-card rounded-2xl p-6">
       <h3 class="text-lg font-semibold mb-4"><i class="fas fa-database text-gray-400 mr-2"></i>Database Connection</h3>
@@ -228,6 +267,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js?v=5"></script>
   <script src="js/auth.js?v=2"></script>
-  <script src="js/settings.js?v=2"></script>
+  <script src="js/settings.js?v=3"></script>
 </body>
 </html>

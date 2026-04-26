@@ -215,6 +215,44 @@ async function handleEditPart(event) {
   btn.innerHTML = '<i class="fas fa-save mr-2"></i>Save';
 }
 
+// ─── Email Notification Config ──────────────────────────
+async function loadEmailConfig() {
+  const config = await db.getAppSetting('email_config');
+  if (config) {
+    document.getElementById('emailNotifyTo').value = config.notifyEmail || '';
+    document.getElementById('emailPublicKey').value = config.publicKey || '';
+    document.getElementById('emailServiceId').value = config.serviceId || '';
+    document.getElementById('emailTemplateId').value = config.templateId || '';
+  }
+}
+
+async function saveEmailConfig() {
+  const btn = document.getElementById('saveEmailBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Saving...';
+
+  const config = {
+    notifyEmail: document.getElementById('emailNotifyTo').value.trim(),
+    publicKey: document.getElementById('emailPublicKey').value.trim(),
+    serviceId: document.getElementById('emailServiceId').value.trim(),
+    templateId: document.getElementById('emailTemplateId').value.trim()
+  };
+
+  const success = await db.saveAppSetting('email_config', config);
+
+  if (success) {
+    btn.innerHTML = '<i class="fas fa-check mr-1"></i>Saved!';
+  } else {
+    btn.innerHTML = '<i class="fas fa-times mr-1"></i>Error';
+    alert('Failed to save email config.');
+  }
+
+  btn.disabled = false;
+  setTimeout(() => {
+    btn.innerHTML = '<i class="fas fa-save mr-1"></i>Save Changes';
+  }, 2000);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const user = await initializeAuth();
   if (!user || !isAdmin(user)) {
@@ -222,4 +260,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
   await loadSettings();
+  await loadEmailConfig();
 });
