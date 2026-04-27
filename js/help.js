@@ -401,15 +401,15 @@ const HELP_CONTENT = {
 
 function renderHelpSections(sections) {
   return sections.map(section => `
-    <div class="mb-6">
-      <h4 class="text-white font-semibold text-sm mb-2 flex items-center gap-2">
-        <span class="w-1.5 h-1.5 bg-glassAero-gold rounded-full flex-shrink-0"></span>
+    <div style="margin-bottom:1.5rem">
+      <h4 style="color:#fff;font-weight:600;font-size:.9rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem">
+        <span style="width:6px;height:6px;background:#f59e0b;border-radius:50%;flex-shrink:0"></span>
         ${section.heading}
       </h4>
-      <ol class="space-y-1.5 ml-4">
+      <ol style="margin:0;padding-left:1rem;list-style:none">
         ${section.steps.map((step, i) => `
-          <li class="text-gray-300 text-sm leading-relaxed flex gap-2">
-            <span class="text-glassAero-gold/60 font-mono text-xs mt-0.5 flex-shrink-0">${i + 1}.</span>
+          <li style="color:#d1d5db;font-size:.875rem;line-height:1.6;display:flex;gap:.5rem;margin-bottom:.35rem">
+            <span style="color:rgba(245,158,11,0.6);font-family:monospace;font-size:.75rem;margin-top:2px;flex-shrink:0">${i + 1}.</span>
             <span>${step}</span>
           </li>
         `).join('')}
@@ -418,56 +418,77 @@ function renderHelpSections(sections) {
   `).join('');
 }
 
+function injectHelpStyle() {
+  const style = document.createElement('style');
+  style.textContent = `
+    #helpBtn { position:fixed; bottom:1.5rem; right:1.5rem; width:48px; height:48px; background:#f59e0b; color:#000;
+      border:none; border-radius:50%; box-shadow:0 4px 12px rgba(0,0,0,0.3); display:flex; align-items:center;
+      justify-content:center; font-size:1.25rem; font-weight:700; cursor:pointer; z-index:9998; transition:background .2s; }
+    #helpBtn:hover { background:#d97706; }
+    #helpOverlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px);
+      display:flex; align-items:center; justify-content:center; z-index:9999; overflow-y:auto; padding:1rem; }
+    #helpOverlay.help-hidden { display:none; }
+    #helpCard { background:linear-gradient(145deg,#1e293b 0%,#0f172a 100%); border:1px solid rgba(255,255,255,0.1);
+      border-radius:1rem; padding:2rem; max-width:640px; width:100%; margin:auto; max-height:85vh;
+      overflow-y:auto; position:relative; color:#fff; }
+    #helpCloseBtn { position:absolute; top:1rem; right:1rem; width:32px; height:32px; background:transparent;
+      border:none; color:#9ca3af; cursor:pointer; border-radius:8px; display:flex; align-items:center;
+      justify-content:center; font-size:1.1rem; transition:all .2s; }
+    #helpCloseBtn:hover { color:#fff; background:rgba(255,255,255,0.1); }
+    @media print { #helpBtn { display:none !important; } #helpOverlay { display:none !important; } }
+  `;
+  document.head.appendChild(style);
+}
+
 function injectHelpUI() {
   const page = document.body.dataset.helpPage;
   if (!page || !HELP_CONTENT[page]) return;
 
   const content = HELP_CONTENT[page];
 
+  injectHelpStyle();
+
   const btn = document.createElement('button');
   btn.id = 'helpBtn';
   btn.title = 'Help';
-  btn.className = 'fixed bottom-6 right-6 w-12 h-12 bg-glassAero-gold hover:bg-amber-600 text-black rounded-full shadow-lg flex items-center justify-center text-xl font-bold transition z-40 no-print';
   btn.innerHTML = '<i class="fas fa-question"></i>';
   btn.addEventListener('click', () => {
-    document.getElementById('helpModal').classList.remove('hidden');
+    document.getElementById('helpOverlay').classList.remove('help-hidden');
   });
   document.body.appendChild(btn);
 
-  const modal = document.createElement('div');
-  modal.id = 'helpModal';
-  modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden overflow-y-auto p-4';
-  modal.innerHTML = `
-    <div class="stat-card rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto my-auto relative">
-      <button id="helpCloseBtn" class="absolute top-4 right-4 w-8 h-8 text-gray-400 hover:text-white transition flex items-center justify-center rounded-lg hover:bg-white/10" title="Close">
-        <i class="fas fa-times text-lg"></i>
-      </button>
-      <div class="flex items-center gap-3 mb-2">
-        <div class="w-10 h-10 bg-glassAero-gold/20 rounded-lg flex items-center justify-center flex-shrink-0">
-          <i class="fas fa-circle-question text-glassAero-gold text-lg"></i>
+  const overlay = document.createElement('div');
+  overlay.id = 'helpOverlay';
+  overlay.className = 'help-hidden';
+  overlay.innerHTML = `
+    <div id="helpCard">
+      <button id="helpCloseBtn" title="Close"><i class="fas fa-times"></i></button>
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem">
+        <div style="width:40px;height:40px;background:rgba(245,158,11,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="fas fa-circle-question" style="color:#f59e0b;font-size:1.1rem"></i>
         </div>
-        <h3 class="text-xl font-bold text-white">${content.title} — Help</h3>
+        <h3 style="font-size:1.25rem;font-weight:700;margin:0">${content.title} — Help</h3>
       </div>
-      <p class="text-gray-400 text-sm mb-6 ml-[52px]">${content.intro}</p>
-      <div class="border-t border-white/10 pt-4">
+      <p style="color:#9ca3af;font-size:.875rem;margin:0 0 1.5rem 52px">${content.intro}</p>
+      <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:1rem">
         ${renderHelpSections(content.sections)}
       </div>
-      <div class="border-t border-white/10 pt-4 mt-2">
-        <p class="text-gray-500 text-xs text-center">Press Escape or click outside to close</p>
+      <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:1rem;margin-top:.5rem">
+        <p style="color:#6b7280;font-size:.75rem;text-align:center;margin:0">Press Escape or click outside to close</p>
       </div>
     </div>
   `;
-  document.body.appendChild(modal);
+  document.body.appendChild(overlay);
 
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) modal.classList.add('hidden');
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.classList.add('help-hidden');
   });
   document.getElementById('helpCloseBtn').addEventListener('click', () => {
-    modal.classList.add('hidden');
+    overlay.classList.add('help-hidden');
   });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-      modal.classList.add('hidden');
+    if (e.key === 'Escape' && !overlay.classList.contains('help-hidden')) {
+      overlay.classList.add('help-hidden');
     }
   });
 }

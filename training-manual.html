@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glass Aero Production Tracker — Training Manual</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --navy: #0a1628;
+      --slate: #1e293b;
+      --gold: #f59e0b;
+      --sky: #0ea5e9;
+      --emerald: #10b981;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-500: #6b7280;
+      --gray-700: #374151;
+      --gray-900: #111827;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Outfit', 'Segoe UI', sans-serif;
+      color: var(--gray-900);
+      line-height: 1.6;
+      background: white;
+    }
+
+    .cover-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--slate) 50%, #0f172a 100%);
+      color: white;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    .cover-logo {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--gold), #d97706);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .cover-title {
+      font-size: 2.8rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .cover-subtitle {
+      font-size: 1.5rem;
+      font-weight: 300;
+      color: var(--gold);
+      margin-bottom: 3rem;
+    }
+
+    .cover-meta {
+      font-size: 0.95rem;
+      color: #94a3b8;
+      line-height: 2;
+    }
+
+    .content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 3rem;
+    }
+
+    .toc {
+      padding: 2rem 3rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .toc h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--navy);
+      border-bottom: 3px solid var(--gold);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .toc-list {
+      list-style: none;
+      counter-reset: toc-counter;
+    }
+
+    .toc-list li {
+      counter-increment: toc-counter;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--gray-200);
+      font-size: 1rem;
+    }
+
+    .toc-list li a {
+      color: var(--gray-700);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .toc-list li a:hover { color: var(--sky); }
+
+    .toc-list li a::before {
+      content: counter(toc-counter) ".";
+      font-weight: 600;
+      color: var(--gold);
+      min-width: 2rem;
+    }
+
+    .toc-sub {
+      list-style: none;
+      padding-left: 2.75rem;
+    }
+
+    .toc-sub li { border-bottom: none; padding: 0.25rem 0; font-size: 0.9rem; }
+    .toc-sub li a::before { content: none; }
+    .toc-sub li a { color: var(--gray-500); }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--navy);
+      border-bottom: 3px solid var(--gold);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--slate);
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p { margin-bottom: 0.75rem; }
+
+    ol, ul {
+      margin-bottom: 1rem;
+      padding-left: 1.5rem;
+    }
+
+    li { margin-bottom: 0.35rem; }
+
+    strong { font-weight: 600; }
+
+    .step-list {
+      list-style: none;
+      padding-left: 0;
+      counter-reset: step-counter;
+    }
+
+    .step-list li {
+      counter-increment: step-counter;
+      padding: 0.5rem 0 0.5rem 2.5rem;
+      position: relative;
+      border-left: 2px solid var(--gray-200);
+      margin-left: 0.75rem;
+    }
+
+    .step-list li::before {
+      content: counter(step-counter);
+      position: absolute;
+      left: -13px;
+      top: 0.5rem;
+      width: 24px;
+      height: 24px;
+      background: var(--gold);
+      color: white;
+      border-radius: 50%;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .callout {
+      background: #fffbeb;
+      border-left: 4px solid var(--gold);
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.95rem;
+    }
+
+    .callout-blue {
+      background: #eff6ff;
+      border-left-color: var(--sky);
+    }
+
+    .callout-green {
+      background: #ecfdf5;
+      border-left-color: var(--emerald);
+    }
+
+    .callout strong { color: var(--gray-900); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background: var(--navy);
+      color: white;
+      padding: 0.6rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    td {
+      padding: 0.5rem 1rem;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    tr:nth-child(even) td { background: var(--gray-100); }
+
+    .workflow-box {
+      background: linear-gradient(135deg, var(--navy), var(--slate));
+      color: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .workflow-box h3 { color: var(--gold); margin-top: 0; }
+
+    .workflow-steps {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .workflow-step {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .workflow-arrow { color: var(--gold); font-size: 1.2rem; }
+
+    .kbd {
+      background: var(--gray-200);
+      border: 1px solid var(--gray-300);
+      border-radius: 4px;
+      padding: 0.1rem 0.4rem;
+      font-size: 0.8rem;
+      font-family: monospace;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--gray-500);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--gray-200);
+      margin-top: 3rem;
+    }
+
+    @media print {
+      .cover-page {
+        min-height: auto;
+        height: 100vh;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .toc, .content { padding: 1.5rem 2rem; }
+
+      .page-break { page-break-before: always; }
+
+      .no-break { page-break-inside: avoid; }
+
+      .workflow-box {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      th {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .step-list li::before {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .callout, .callout-blue, .callout-green {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      body { font-size: 11pt; }
+      h1 { font-size: 16pt; }
+      h2 { font-size: 13pt; }
+      h3 { font-size: 11pt; }
+
+      a { color: inherit; text-decoration: none; }
+    }
+
+    @media screen {
+      .screen-only-print-btn {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: var(--gold);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 100;
+      }
+
+      .screen-only-print-btn:hover { background: #d97706; }
+    }
+
+    @media print {
+      .screen-only-print-btn { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<button class="screen-only-print-btn" onclick="window.print()">Save as PDF / Print</button>
+
+<!-- ─── COVER PAGE ─── -->
+<div class="cover-page">
+  <div class="cover-logo">&#9830;</div>
+  <div class="cover-title">Glass Aero Production Tracker</div>
+  <div class="cover-subtitle">Training Manual</div>
+  <div class="cover-meta">
+    Version 2.0<br>
+    April 2026<br><br>
+    Windshield Repair Production Tracking System<br>
+    For all users and administrators
+  </div>
+</div>
+
+<!-- ─── TABLE OF CONTENTS ─── -->
+<div class="toc page-break">
+  <h2>Table of Contents</h2>
+  <ol class="toc-list">
+    <li><a href="#getting-started">Getting Started</a>
+      <ul class="toc-sub">
+        <li><a href="#logging-in">Logging In</a></li>
+        <li><a href="#navigation">Navigation</a></li>
+        <li><a href="#user-roles">User Roles</a></li>
+        <li><a href="#help-button">Using the Help Button</a></li>
+      </ul>
+    </li>
+    <li><a href="#dashboard">Dashboard</a></li>
+    <li><a href="#work-orders">Work Orders</a>
+      <ul class="toc-sub">
+        <li><a href="#wo-search">Searching &amp; Filtering</a></li>
+        <li><a href="#wo-create">Creating a New Work Order</a></li>
+        <li><a href="#wo-import">Importing Work Orders (Admin)</a></li>
+      </ul>
+    </li>
+    <li><a href="#wo-detail">Work Order Detail</a>
+      <ul class="toc-sub">
+        <li><a href="#wo-advance">Advancing Stages</a></li>
+        <li><a href="#wo-inspection">Inspection (Stage 3)</a></li>
+        <li><a href="#wo-hold">Holds &amp; Resuming</a></li>
+        <li><a href="#wo-documents">Documents &amp; Photos</a></li>
+        <li><a href="#wo-edit">Editing &amp; Reverting</a></li>
+        <li><a href="#wo-print">Printing &amp; Barcodes</a></li>
+      </ul>
+    </li>
+    <li><a href="#scan">Scan &amp; Advance</a></li>
+    <li><a href="#new-windshield">Adding a New Windshield (Complete Workflow)</a></li>
+    <li><a href="#settings">Settings (Admin)</a></li>
+    <li><a href="#inventory">Inventory Management</a></li>
+    <li><a href="#bom">Bill of Materials (BOM)</a></li>
+    <li><a href="#reports">Reports</a></li>
+    <li><a href="#tickets">Support Tickets</a></li>
+    <li><a href="#troubleshooting">Tips &amp; Troubleshooting</a></li>
+  </ol>
+</div>
+
+<!-- ─── 1. GETTING STARTED ─── -->
+<div class="content page-break">
+  <h1 id="getting-started">1. Getting Started</h1>
+
+  <h2 id="logging-in">Logging In</h2>
+  <ol class="step-list">
+    <li>Open the Production Tracker in your web browser (Chrome, Edge, or Firefox recommended).</li>
+    <li>Enter your <strong>email address</strong> and <strong>password</strong>.</li>
+    <li>Click <strong>Sign In</strong>.</li>
+  </ol>
+  <p>If you don't have login credentials, contact your administrator.</p>
+
+  <h2 id="navigation">Navigation</h2>
+  <p>The top navigation bar provides access to all areas of the system:</p>
+  <table>
+    <tr><th>Menu Item</th><th>Description</th><th>Access</th></tr>
+    <tr><td><strong>Dashboard</strong></td><td>Production overview and status summary</td><td>All users</td></tr>
+    <tr><td><strong>Scan</strong></td><td>Barcode scanning to advance work orders</td><td>All users</td></tr>
+    <tr><td><strong>Work Orders</strong></td><td>View and manage all repair orders</td><td>All users</td></tr>
+    <tr><td><strong>Inventory</strong></td><td>Manage subcomponent stock levels</td><td>All users</td></tr>
+    <tr><td><strong>BOM</strong></td><td>Bill of Materials configuration</td><td>Admin only</td></tr>
+    <tr><td><strong>Reports</strong></td><td>Production and inventory reports</td><td>All users</td></tr>
+    <tr><td><strong>Tickets</strong></td><td>Support ticket management</td><td>Admin only</td></tr>
+    <tr><td><strong>Settings</strong></td><td>System configuration</td><td>Admin only</td></tr>
+  </table>
+
+  <h2 id="user-roles">User Roles</h2>
+  <table>
+    <tr><th>Role</th><th>Can Do</th></tr>
+    <tr><td><strong>Standard User</strong></td><td>View orders, advance stages, manage inventory, receive stock, upload documents, submit support tickets</td></tr>
+    <tr><td><strong>Admin</strong></td><td>Everything above, plus: BOM configuration, Settings, Import, Delete orders, manage tickets</td></tr>
+  </table>
+
+  <h2 id="help-button">Using the Help Button</h2>
+  <p>Every page has a gold <strong>"?"</strong> button in the bottom-right corner. Click it to open a help overlay with step-by-step instructions for that specific page. You can close it by clicking the X, clicking outside the box, or pressing <span class="kbd">Esc</span>.</p>
+</div>
+
+<!-- ─── 2. DASHBOARD ─── -->
+<div class="content page-break">
+  <h1 id="dashboard">2. Dashboard</h1>
+  <p>The Dashboard is your real-time overview of everything happening on the shop floor.</p>
+
+  <h2>Stat Cards</h2>
+  <p>The top row shows five key metrics. Click any card to jump to the related page with filters applied.</p>
+  <table>
+    <tr><th>Card</th><th>What It Shows</th></tr>
+    <tr><td><strong>Active Orders</strong></td><td>Total work orders currently in progress</td></tr>
+    <tr><td><strong>Completed This Month</strong></td><td>Orders finished in the current calendar month</td></tr>
+    <tr><td><strong>On Hold</strong></td><td>Orders currently paused</td></tr>
+    <tr><td><strong>Total Parts</strong></td><td>Number of subcomponents in inventory</td></tr>
+    <tr><td><strong>Low Stock</strong></td><td>Subcomponents at or below their reorder point</td></tr>
+  </table>
+
+  <h2>Production Pipeline</h2>
+  <p>Each column represents one of the 15 production stages. The number badge shows how many work orders are at that stage. Click a stage to view the orders in it.</p>
+
+  <h2>Recent Work Orders</h2>
+  <p>Shows the most recently updated work orders. Click any row to open its detail page.</p>
+
+  <h2>Low Stock Alerts</h2>
+  <p>Lists subcomponents that are at or below their reorder point. Click "View All Inventory" to manage stock levels.</p>
+
+  <h2>Report an Issue</h2>
+  <p>Click the <strong>Report Issue</strong> button to submit a support ticket. Select the page the issue is on, choose a type (Bug or Feature Request), and describe the problem.</p>
+</div>
+
+<!-- ─── 3. WORK ORDERS ─── -->
+<div class="content page-break">
+  <h1 id="work-orders">3. Work Orders</h1>
+
+  <h2 id="wo-search">Searching &amp; Filtering</h2>
+  <ol class="step-list">
+    <li>Use the <strong>search bar</strong> to find orders by WO number, customer name, or part number.</li>
+    <li>Filter by <strong>Status</strong> (In Progress, Completed, On Hold).</li>
+    <li>Filter by <strong>Stage</strong> to see orders at a specific production step.</li>
+    <li>Filter by <strong>Part Number</strong> to see only orders for a specific windshield.</li>
+    <li>Click <strong>Clear</strong> to reset all filters.</li>
+  </ol>
+  <p>Click any row in the table to open that work order's detail page.</p>
+
+  <h2 id="wo-create">Creating a New Work Order</h2>
+  <ol class="step-list">
+    <li>Click the <strong>New Work Order</strong> button.</li>
+    <li>Fill in the required fields (marked with <strong>*</strong>):
+      <ul>
+        <li><strong>WO Number</strong> — must be unique; this is what gets printed on the barcode</li>
+        <li><strong>Customer Name</strong></li>
+      </ul>
+    </li>
+    <li>Select a <strong>Part Number</strong> from the dropdown. If the part you need isn't listed, an admin must add it in Settings first.</li>
+    <li>Fill in optional fields as needed: Serial Number, Contract, Aircraft info, Notes, etc.</li>
+    <li>Click <strong>Create Work Order</strong>.</li>
+  </ol>
+  <p>The order starts at Stage 1 automatically and you'll be taken to its detail page.</p>
+
+  <h2 id="wo-import">Importing Work Orders (Admin Only)</h2>
+  <ol class="step-list">
+    <li>From the Work Orders page, click <strong>Import</strong>.</li>
+    <li>Click <strong>Download Template</strong> to get the Excel file with correct column headers.</li>
+    <li>Fill in your data. Required: WO Number. Mark each stage column Y (perform) or N (skip). Delete the instructions row.</li>
+    <li>Click <strong>Choose File</strong> and select your filled-in spreadsheet.</li>
+    <li>Review the preview — valid rows show green, errors show red.</li>
+    <li>Click <strong>Import All Valid</strong> to create the work orders.</li>
+  </ol>
+  <div class="callout no-break">
+    <strong>Note:</strong> Stage 1 and Stage 15 are always required and cannot be skipped. All imported orders start at Stage 1.
+  </div>
+</div>
+
+<!-- ─── 4. WORK ORDER DETAIL ─── -->
+<div class="content page-break">
+  <h1 id="wo-detail">4. Work Order Detail</h1>
+  <p>This is the main workspace for a single work order — where you advance stages, manage documents, view issued parts, and track history.</p>
+
+  <h2>Production Progress Bar</h2>
+  <table>
+    <tr><th>Color</th><th>Meaning</th></tr>
+    <tr><td><strong>Green</strong></td><td>Stage completed</td></tr>
+    <tr><td><strong>Gold/Blue</strong></td><td>Current stage</td></tr>
+    <tr><td><strong>Gray</strong></td><td>Upcoming stage</td></tr>
+    <tr><td><strong>Skip icon</strong></td><td>Skipped stage (set during Inspection)</td></tr>
+    <tr><td><strong>Red pulse</strong></td><td>On hold</td></tr>
+  </table>
+
+  <h2 id="wo-advance">Advancing to the Next Stage</h2>
+  <ol class="step-list">
+    <li>Click the <strong>Advance Stage</strong> button.</li>
+    <li>If this stage has BOM parts assigned, review the parts that will be deducted from inventory.</li>
+    <li>Optionally add notes about the work performed.</li>
+    <li>Click <strong>Confirm</strong>.</li>
+  </ol>
+  <p>The system automatically deducts BOM parts from inventory and records the transition in the stage history.</p>
+
+  <h2 id="wo-inspection">Inspection (Stage 3) — Special</h2>
+  <p>When advancing <em>through</em> Stage 3 (Inspection), you'll be presented with a checklist of all stages. Select which stages should be <strong>skipped</strong> for this particular order. The system will automatically jump over skipped stages during subsequent advances.</p>
+  <div class="callout-blue callout no-break">
+    <strong>Why skip stages?</strong> Not every windshield needs all 15 production steps. The inspector evaluates the windshield and determines which stages are necessary for this specific repair.
+  </div>
+
+  <h2 id="wo-hold">Placing On Hold &amp; Resuming</h2>
+  <h3>To place on hold:</h3>
+  <ol class="step-list">
+    <li>Click the <strong>Hold</strong> button.</li>
+    <li>Enter the reason for the hold (required).</li>
+    <li>Click <strong>Confirm Hold</strong>.</li>
+  </ol>
+  <p>The order shows a red "ON HOLD" banner and cannot advance until resumed.</p>
+
+  <h3>To resume:</h3>
+  <p>Click the <strong>Resume</strong> button. The order returns to normal status and can be advanced again.</p>
+
+  <h2 id="wo-documents">Documents &amp; Photos</h2>
+  <ol class="step-list">
+    <li>Click <strong>Upload</strong> or drag-and-drop files into the drop zone.</li>
+    <li>Accepted formats: <strong>PDF, PNG, JPG, GIF, WEBP, and HEIC</strong> (iPhone photos).</li>
+    <li>iPhone photos (HEIC format) are automatically converted to JPG for compatibility.</li>
+    <li>Hover over a document to <strong>view</strong> (eye icon) or <strong>delete</strong> (trash icon) it.</li>
+  </ol>
+  <div class="callout no-break">
+    <strong>File size limit:</strong> 10 MB per file.
+  </div>
+
+  <h2 id="wo-edit">Editing &amp; Reverting</h2>
+  <h3>Editing order details:</h3>
+  <p>Click the pencil icon next to "Order Details" to edit fields. Click <strong>Save Changes</strong> when done.</p>
+  <div class="callout no-break">
+    <strong>Warning:</strong> Changing the part number will reverse all previously issued BOM parts and re-issue the correct parts for the new BOM.
+  </div>
+
+  <h3>Reverting to the previous stage:</h3>
+  <p>Click <strong>Go Back</strong> (when visible) to revert the order one stage. Any parts issued when entering the current stage will be restored to inventory.</p>
+
+  <h2 id="wo-print">Printing &amp; Barcodes</h2>
+  <table>
+    <tr><th>Button</th><th>What It Does</th></tr>
+    <tr><td><strong>Print Barcode</strong></td><td>Generates a barcode label with WO number, part number, and serial number (Code 128 format)</td></tr>
+    <tr><td><strong>Print</strong></td><td>Creates a print-friendly view of the entire work order</td></tr>
+    <tr><td><strong>Delete</strong> (Admin)</td><td>Permanently deletes the work order — cannot be undone</td></tr>
+  </table>
+
+  <h3>Recommended label printer:</h3>
+  <p>Brother QL-1100C with DK-1208 labels (3.5" x 1.4"). Set the paper size to DK-1208 in printer preferences.</p>
+</div>
+
+<!-- ─── 5. SCAN & ADVANCE ─── -->
+<div class="content page-break">
+  <h1 id="scan">5. Scan &amp; Advance</h1>
+  <p>The Scan page is designed for tablets and mobile devices on the shop floor. Use it to quickly look up and advance work orders.</p>
+
+  <h2>Using a Barcode Scanner</h2>
+  <ol class="step-list">
+    <li>Navigate to the <strong>Scan</strong> page (or tap the Scan icon in the nav).</li>
+    <li>Place your cursor in the scan input field.</li>
+    <li>Scan the barcode on the work order label — the WO number fills in automatically.</li>
+    <li>The order's current stage and status appear.</li>
+    <li>Click <strong>Advance</strong> to move to the next stage.</li>
+  </ol>
+
+  <h2>Manual Entry</h2>
+  <ol class="step-list">
+    <li>Type the WO number in the input field.</li>
+    <li>Click <strong>Lookup</strong> or press <span class="kbd">Enter</span>.</li>
+    <li>Review the order information, then click <strong>Advance</strong>.</li>
+  </ol>
+
+  <div class="callout-blue callout no-break">
+    <strong>Tip:</strong> After advancing, the input clears so you can scan the next order immediately. If the stage has BOM parts, you'll confirm them before advancing.
+  </div>
+</div>
+
+<!-- ─── 6. ADDING A NEW WINDSHIELD ─── -->
+<div class="content page-break">
+  <h1 id="new-windshield">6. Adding a New Windshield (Complete Workflow)</h1>
+  <p>This is the most common source of confusion. Adding a new windshield part number requires <strong>three steps across three pages</strong>, done in order:</p>
+
+  <div class="workflow-box no-break">
+    <h3>The 3-Step Workflow</h3>
+    <div class="workflow-steps">
+      <div class="workflow-step">1. Settings<br><small>Add part number</small></div>
+      <span class="workflow-arrow">&#10132;</span>
+      <div class="workflow-step">2. Inventory<br><small>Add subcomponents</small></div>
+      <span class="workflow-arrow">&#10132;</span>
+      <div class="workflow-step">3. BOM<br><small>Link parts to stages</small></div>
+    </div>
+  </div>
+
+  <h2>Step 1: Add the Part Number (Settings Page)</h2>
+  <ol class="step-list">
+    <li>Go to the <strong>Settings</strong> page.</li>
+    <li>In the "Windshield Part Numbers" section, click <strong>Add</strong>.</li>
+    <li>Enter the part number and an optional description.</li>
+    <li>Click <strong>Save</strong>.</li>
+  </ol>
+  <p>The new part number is now available in the work order dropdown.</p>
+
+  <h2>Step 2: Add Subcomponents (Inventory Page)</h2>
+  <p>Check if the new windshield needs any subcomponents (materials/parts) that don't already exist in inventory.</p>
+  <ol class="step-list">
+    <li>Go to the <strong>Inventory</strong> page.</li>
+    <li>Review existing subcomponents — if the parts you need are already there, skip to Step 3.</li>
+    <li>For each new subcomponent, click <strong>Add Part</strong>.</li>
+    <li>Enter the part number, description, category, unit of measure, initial quantity, reorder point, and other details.</li>
+    <li>Click <strong>Save</strong>.</li>
+  </ol>
+  <div class="callout no-break">
+    <strong>Remember:</strong> Subcomponents are shared across all windshields. If a material is already in inventory (e.g., sealant, bolts), you don't need to add it again — you'll reuse it in the BOM.
+  </div>
+
+  <h2>Step 3: Define the BOM (BOM Page)</h2>
+  <ol class="step-list">
+    <li>Go to the <strong>BOM</strong> page.</li>
+    <li>Select the new windshield from the <strong>Part Number</strong> dropdown.</li>
+    <li>Click <strong>Add Item</strong> for each subcomponent needed.</li>
+    <li>For each item:
+      <ul>
+        <li>Select the <strong>subcomponent</strong> from the dropdown</li>
+        <li>Choose which <strong>stage</strong> it should be issued at</li>
+        <li>Enter the <strong>quantity required</strong></li>
+        <li>Add optional notes</li>
+      </ul>
+    </li>
+    <li>Click <strong>Save</strong>.</li>
+    <li>Repeat for every subcomponent needed at every stage.</li>
+  </ol>
+  <div class="callout-green callout no-break">
+    <strong>Done!</strong> The windshield is now fully configured. When work orders for this part number advance through each stage, the correct subcomponents will be automatically deducted from inventory.
+  </div>
+</div>
+
+<!-- ─── 7. SETTINGS ─── -->
+<div class="content page-break">
+  <h1 id="settings">7. Settings (Admin Only)</h1>
+
+  <h2>Windshield Part Numbers</h2>
+  <p>Manage the list of valid part numbers that can be assigned to work orders.</p>
+  <ol class="step-list">
+    <li>Click <strong>Add</strong> to create a new part number.</li>
+    <li>Enter the part number and optional description.</li>
+    <li>Click <strong>Save</strong>.</li>
+  </ol>
+  <p>To edit an existing part, click its edit icon, modify the fields, and save.</p>
+
+  <h2>Stage Time Limits</h2>
+  <p>Set the expected number of <strong>business hours</strong> for each production stage. Orders exceeding this time are flagged as "late" on the dashboard.</p>
+  <ol class="step-list">
+    <li>Enter the number of hours for each stage.</li>
+    <li>Click <strong>Save Changes</strong>.</li>
+  </ol>
+
+  <h2>Business Hours</h2>
+  <p>Define your shop's operating hours. Stage duration calculations and late flags only count hours within this window.</p>
+  <table>
+    <tr><th>Setting</th><th>Description</th></tr>
+    <tr><td><strong>Shop Opens</strong></td><td>Start of the workday</td></tr>
+    <tr><td><strong>Shop Closes</strong></td><td>End of the workday</td></tr>
+    <tr><td><strong>Timezone</strong></td><td>Your local timezone</td></tr>
+    <tr><td><strong>Work Days</strong></td><td>Check the days your shop operates</td></tr>
+  </table>
+  <p>Weekends and hours outside this range are excluded from time calculations.</p>
+
+  <h2>Email Notifications (EmailJS)</h2>
+  <p>Configure email notifications for support tickets by entering your EmailJS Service ID, Template ID, and Public Key. Click <strong>Save Changes</strong> to apply.</p>
+</div>
+
+<!-- ─── 8. INVENTORY ─── -->
+<div class="content page-break">
+  <h1 id="inventory">8. Inventory Management</h1>
+  <p>The Inventory page manages subcomponents — the individual parts and materials used in windshield production. These are the items that get assigned to BOMs and automatically deducted during production.</p>
+
+  <h2>Adding a New Subcomponent</h2>
+  <ol class="step-list">
+    <li>Click <strong>Add Part</strong>.</li>
+    <li>Enter: part number, description, category, unit of measure, quantity on hand.</li>
+    <li>Set a <strong>reorder point</strong> to trigger low-stock alerts on the dashboard.</li>
+    <li>Optionally add: unit cost, reorder quantity, lead time, and supplier.</li>
+    <li>Click <strong>Save</strong>.</li>
+  </ol>
+  <p>After adding a subcomponent here, it becomes available in the BOM page for assignment to windshield part numbers.</p>
+
+  <h2>Receiving Stock</h2>
+  <ol class="step-list">
+    <li>Click <strong>Receive Stock</strong>.</li>
+    <li>Select the part from the dropdown.</li>
+    <li>Enter the quantity received.</li>
+    <li>Click <strong>Receive</strong> — the quantity on hand updates immediately.</li>
+  </ol>
+
+  <h2>Filtering &amp; Monitoring</h2>
+  <table>
+    <tr><th>Filter</th><th>What It Does</th></tr>
+    <tr><td><strong>Category</strong></td><td>Filter by: Glass, Electrical, Seals, Hardware, Consumable, General</td></tr>
+    <tr><td><strong>Low stock only</strong></td><td>Show only parts at or below their reorder point</td></tr>
+  </table>
+
+  <h2>Understanding the Columns</h2>
+  <table>
+    <tr><th>Column</th><th>Meaning</th></tr>
+    <tr><td><strong>On Hand</strong></td><td>Current physical stock count</td></tr>
+    <tr><td><strong>Committed</strong></td><td>Quantity needed by active work orders (shown in parentheses)</td></tr>
+    <tr><td><strong>Available</strong></td><td>On Hand minus Committed — your real available stock</td></tr>
+    <tr><td><strong>Reorder Point</strong></td><td>Below this level triggers a low-stock alert</td></tr>
+    <tr><td><strong>Status</strong></td><td>OK (green), Low (yellow), Critical/Shortage (red)</td></tr>
+  </table>
+</div>
+
+<!-- ─── 9. BOM ─── -->
+<div class="content page-break">
+  <h1 id="bom">9. Bill of Materials (BOM)</h1>
+  <p>The BOM defines which subcomponents are needed for each windshield part number, and at which production stage they should be issued. Admin access required.</p>
+
+  <h2>How It Works</h2>
+  <p>Each windshield has its own BOM. When a work order advances to a stage, the system checks the BOM for that windshield and stage, then automatically deducts the required parts from inventory.</p>
+
+  <h2>Viewing a BOM</h2>
+  <ol class="step-list">
+    <li>Select a windshield part number from the dropdown at the top.</li>
+    <li>The BOM displays organized by production stage, showing each subcomponent, quantity, and notes.</li>
+  </ol>
+
+  <h2>Adding a BOM Item</h2>
+  <ol class="step-list">
+    <li>Click <strong>Add Item</strong>.</li>
+    <li>Select the <strong>subcomponent</strong> from the dropdown.</li>
+    <li>Choose the <strong>production stage</strong> it should be issued at.</li>
+    <li>Enter the <strong>quantity required</strong>.</li>
+    <li>Add optional notes.</li>
+    <li>Click <strong>Save</strong>.</li>
+  </ol>
+
+  <div class="callout no-break">
+    <strong>Subcomponent not in the dropdown?</strong> Go to the <strong>Inventory</strong> page and add it first. The dropdown shows all parts from Inventory.
+  </div>
+
+  <h2>Editing &amp; Removing Items</h2>
+  <ul>
+    <li>Click the <strong>pencil icon</strong> to change a line item's stage, quantity, or notes.</li>
+    <li>Click the <strong>trash icon</strong> to remove a line item.</li>
+    <li>Changes affect future stage advances — already-issued parts are not affected.</li>
+  </ul>
+
+  <div class="callout-blue callout no-break">
+    <strong>Tip:</strong> A subcomponent can appear at multiple stages. For example, if sealant is applied at both Stage 5 and Stage 12, add two separate BOM entries.
+  </div>
+</div>
+
+<!-- ─── 10. REPORTS ─── -->
+<div class="content page-break">
+  <h1 id="reports">10. Reports</h1>
+  <p>Generate production and inventory reports. All reports can be printed.</p>
+
+  <h2>Report Types</h2>
+  <table>
+    <tr><th>Report</th><th>What It Shows</th></tr>
+    <tr><td><strong>Weekly</strong></td><td>Production activity for the current week: orders started, completed, in progress, and stage-by-stage breakdown</td></tr>
+    <tr><td><strong>Projected Inventory</strong></td><td>Forecasts which parts will be needed for active orders and highlights potential shortages</td></tr>
+    <tr><td><strong>Quarterly</strong></td><td>Production trends over the past 3 months with a chart</td></tr>
+    <tr><td><strong>Annual</strong></td><td>Full-year overview with monthly breakdown and trend charts</td></tr>
+  </table>
+
+  <h2>Generating a Report</h2>
+  <ol class="step-list">
+    <li>Click the <strong>tab</strong> for the report type you want (Weekly, Projected Inventory, Quarterly, Annual).</li>
+    <li>Click <strong>Generate</strong> if the report doesn't load automatically.</li>
+    <li>Click <strong>Print Report</strong> to open a print-friendly version.</li>
+  </ol>
+</div>
+
+<!-- ─── 11. SUPPORT TICKETS ─── -->
+<div class="content page-break">
+  <h1 id="tickets">11. Support Tickets</h1>
+
+  <h2>Submitting a Ticket (All Users)</h2>
+  <ol class="step-list">
+    <li>From the <strong>Dashboard</strong>, click the <strong>Report Issue</strong> button.</li>
+    <li>Select the page the issue is on.</li>
+    <li>Choose a type: <strong>Bug</strong> or <strong>Feature Request</strong>.</li>
+    <li>Describe the problem or request.</li>
+    <li>Click <strong>Submit</strong>.</li>
+  </ol>
+
+  <h2>Managing Tickets (Admin)</h2>
+  <ol class="step-list">
+    <li>Go to the <strong>Tickets</strong> page.</li>
+    <li>Use the stat cards at the top to filter by status (Open, In Progress, Resolved).</li>
+    <li>Use the <strong>Status</strong> and <strong>Type</strong> dropdowns for additional filtering.</li>
+    <li>Click any row to open the ticket detail and update its status.</li>
+  </ol>
+</div>
+
+<!-- ─── 12. TROUBLESHOOTING ─── -->
+<div class="content page-break">
+  <h1 id="troubleshooting">12. Tips &amp; Troubleshooting</h1>
+
+  <h2>Best Practices</h2>
+  <ul>
+    <li><strong>Scan, don't type</strong> — use barcode scanning whenever possible to reduce errors.</li>
+    <li><strong>Keep inventory updated</strong> — receive stock promptly to maintain accurate availability.</li>
+    <li><strong>Use holds appropriately</strong> — always document the reason clearly for team communication.</li>
+    <li><strong>Check Low Stock daily</strong> — review dashboard alerts to prevent production delays.</li>
+    <li><strong>Add notes when advancing</strong> — document any issues or observations at each stage.</li>
+    <li><strong>Use the Help button</strong> — every page has a "?" button with context-specific instructions.</li>
+  </ul>
+
+  <h2>Common Issues &amp; Solutions</h2>
+  <table>
+    <tr><th>Problem</th><th>Solution</th></tr>
+    <tr><td>"Database connection error"</td><td>Check your network connection and refresh the page. If it persists, contact your administrator.</td></tr>
+    <tr><td>"Part number not found"</td><td>The part number needs to be added in Settings first (admin required).</td></tr>
+    <tr><td>"Insufficient inventory"</td><td>Check the Inventory page for current stock levels. Receive new stock or adjust the BOM if quantities are incorrect.</td></tr>
+    <tr><td>Label printing issues</td><td>Ensure the correct printer is selected and paper size matches your label roll (DK-1208 recommended).</td></tr>
+    <tr><td>Order stuck on hold</td><td>Click Resume on the order detail page. Check the hold reason if unclear why it was held.</td></tr>
+    <tr><td>New feature not appearing</td><td>Do a hard refresh: <span class="kbd">Ctrl</span> + <span class="kbd">Shift</span> + <span class="kbd">R</span></td></tr>
+    <tr><td>iPhone photo won't upload</td><td>HEIC photos are supported and auto-converted to JPG. If conversion fails, convert the photo to JPG on your phone first.</td></tr>
+    <tr><td>Can't find subcomponent in BOM dropdown</td><td>Add the subcomponent in the Inventory page first, then return to BOM.</td></tr>
+  </table>
+
+  <h2>Browser Compatibility</h2>
+  <table>
+    <tr><th>Platform</th><th>Recommended Browser</th></tr>
+    <tr><td>Desktop</td><td>Google Chrome, Microsoft Edge, or Mozilla Firefox (latest)</td></tr>
+    <tr><td>iPad / iPhone</td><td>Safari</td></tr>
+    <tr><td>Android tablet</td><td>Chrome</td></tr>
+  </table>
+
+  <h2>Real-Time Updates</h2>
+  <p>The system uses real-time synchronization. Multiple users can work simultaneously — changes appear immediately across all browsers. The dashboard updates automatically when orders change.</p>
+
+  <div class="footer">
+    <p><strong>Glass Aero Production Tracker</strong> — Training Manual v2.0 — April 2026</p>
+    <p>For technical support, use the Report Issue button on the Dashboard or contact your system administrator.</p>
+  </div>
+</div>
+
+</body>
+</html>
