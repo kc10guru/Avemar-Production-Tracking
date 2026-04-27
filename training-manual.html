@@ -352,15 +352,38 @@
       }
 
       .screen-only-print-btn:hover { background: #d97706; }
+
+      .screen-only-nav-btn {
+        position: fixed;
+        bottom: 2rem;
+        left: 2rem;
+        background: var(--navy);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 100;
+        text-decoration: none;
+        border: 1px solid rgba(255,255,255,0.2);
+      }
+
+      .screen-only-nav-btn:hover { background: var(--slate); }
     }
 
     @media print {
       .screen-only-print-btn { display: none; }
+      .screen-only-nav-btn { display: none; }
     }
   </style>
 </head>
 <body>
 
+<a href="index.html" class="screen-only-nav-btn">&#9664; Go to Production Tracker</a>
 <button class="screen-only-print-btn" onclick="window.print()">Save as PDF / Print</button>
 
 <!-- ─── COVER PAGE ─── -->
