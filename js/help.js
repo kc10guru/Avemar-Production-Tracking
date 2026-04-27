@@ -493,4 +493,8 @@ function injectHelpUI() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', injectHelpUI);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', injectHelpUI);
+} else {
+  injectHelpUI();
+}
