@@ -41,6 +41,27 @@ function renderParts() {
   `).join('');
 }
 
+const HOURS_PER_DAY = 6.8;
+
+function hoursToDays(hours) {
+  return (hours / HOURS_PER_DAY).toFixed(1);
+}
+
+function updateStageTotals() {
+  const inputs = document.querySelectorAll('.stage-time-input');
+  let totalHours = 0;
+  inputs.forEach(input => {
+    const hours = Number(input.value) || 0;
+    const daysEl = input.closest('.stage-row').querySelector('.stage-days');
+    if (daysEl) daysEl.textContent = hoursToDays(hours) + ' days';
+    totalHours += hours;
+  });
+  const totalEl = document.getElementById('stageTotalHours');
+  const totalDaysEl = document.getElementById('stageTotalDays');
+  if (totalEl) totalEl.textContent = totalHours + ' hours';
+  if (totalDaysEl) totalDaysEl.textContent = hoursToDays(totalHours) + ' days';
+}
+
 function renderStages() {
   const container = document.getElementById('stagesList');
 
@@ -53,20 +74,38 @@ function renderStages() {
     };
     const roleColor = roleColors[s.requiredRole] || 'text-gray-400';
     const roleLabel = s.requiredRole.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const days = hoursToDays(s.timeLimitHours);
 
     return `
-      <div class="flex items-center gap-4 p-3 bg-white/5 rounded-lg">
+      <div class="stage-row flex items-center gap-4 p-3 bg-white/5 rounded-lg">
         <span class="text-gray-500 text-sm font-medium w-8 text-right">${s.stageNumber}.</span>
         <span class="text-white text-sm flex-1">${s.stageName}</span>
         <span class="text-xs ${roleColor} w-24">${roleLabel}</span>
         <div class="flex items-center gap-2">
           <input type="number" value="${s.timeLimitHours}" min="1" data-stage-id="${s.id}"
-            class="stage-time-input w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-white text-sm text-center focus:outline-none focus:border-glassAero-gold">
+            class="stage-time-input w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-white text-sm text-center focus:outline-none focus:border-glassAero-gold"
+            oninput="updateStageTotals()">
           <span class="text-xs text-gray-500">hours</span>
+          <span class="stage-days text-xs text-glassAero-gold w-16 text-right">${days} days</span>
         </div>
       </div>
     `;
   }).join('');
+
+  const totalHours = stages.reduce((sum, s) => sum + (Number(s.timeLimitHours) || 0), 0);
+  container.innerHTML += `
+    <div class="flex items-center gap-4 p-3 mt-3 bg-glassAero-gold/10 border border-glassAero-gold/30 rounded-lg">
+      <span class="text-gray-500 text-sm font-medium w-8"></span>
+      <span class="text-white text-sm font-semibold flex-1">Total (all 15 stages)</span>
+      <span class="text-xs text-gray-400 w-24"></span>
+      <div class="flex items-center gap-2">
+        <span id="stageTotalHours" class="w-20 text-white text-sm font-semibold text-center">${totalHours} hours</span>
+        <span class="text-xs text-gray-500">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span id="stageTotalDays" class="text-xs text-glassAero-gold font-semibold w-16 text-right">${hoursToDays(totalHours)} days</span>
+      </div>
+    </div>
+    <p class="text-gray-500 text-xs mt-2 italic">Based on ${HOURS_PER_DAY} hours per man-day. Individual windshields may require fewer days if stages are skipped during inspection.</p>
+  `;
 }
 
 async function saveTimeLimits() {
