@@ -265,8 +265,28 @@ function renderPartsIssued() {
 }
 
 // ─── Documents ──────────────────────────────────────────
-const ALLOWED_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+const ALLOWED_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/heic', 'image/heif'];
+const HEIC_EXTENSIONS = ['.heic', '.heif'];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+function isHeicFile(file) {
+  if (ALLOWED_TYPES.includes(file.type)) return file.type === 'image/heic' || file.type === 'image/heif';
+  const ext = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
+  return HEIC_EXTENSIONS.includes(ext);
+}
+
+function isAllowedFile(file) {
+  if (ALLOWED_TYPES.includes(file.type)) return true;
+  const ext = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
+  return HEIC_EXTENSIONS.includes(ext);
+}
+
+async function convertHeicToJpeg(file) {
+  const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.92 });
+  const jpegBlob = Array.isArray(blob) ? blob[0] : blob;
+  const newName = file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg');
+  return new File([jpegBlob], newName, { type: 'image/jpeg' });
+}
 
 function renderDocuments() {
   const container = document.getElementById('documentList');
@@ -318,8 +338,8 @@ async function handleFileUpload(files) {
   const progressText = document.getElementById('uploadProgressText');
 
   const validFiles = Array.from(files).filter(f => {
-    if (!ALLOWED_TYPES.includes(f.type)) {
-      alert(`"${f.name}" is not an allowed file type. Use PDF, PNG, JPG, GIF, or WEBP.`);
+    if (!isAllowedFile(f)) {
+      alert(`"${f.name}" is not an allowed file type. Use PDF, PNG, JPG, GIF, WEBP, or HEIC (iPhone).`);
       return false;
     }
     if (f.size > MAX_FILE_SIZE) {
@@ -334,7 +354,20 @@ async function handleFileUpload(files) {
   progressEl.classList.remove('hidden');
 
   for (let i = 0; i < validFiles.length; i++) {
-    const file = validFiles[i];
+    let file = validFiles[i];
+    progressText.textContent = `Processing ${file.name} (${i + 1} of ${validFiles.length})...`;
+
+    if (isHeicFile(file)) {
+      try {
+        progressText.textContent = `Converting ${file.name} to JPEG...`;
+        file = await convertHeicToJpeg(file);
+      } catch (err) {
+        console.error('HEIC conversion failed:', err);
+        alert(`"${validFiles[i].name}" could not be converted. Please convert to JPG manually and try again.`);
+        continue;
+      }
+    }
+
     progressText.textContent = `Uploading ${file.name} (${i + 1} of ${validFiles.length})...`;
 
     const result = await db.uploadDocument(order.id, file, order.currentStage);
