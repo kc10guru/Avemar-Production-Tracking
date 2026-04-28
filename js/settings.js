@@ -11,9 +11,116 @@ async function loadSettings() {
   renderParts();
   renderStages();
   await loadBusinessHours();
+  await loadUsers();
 
   document.getElementById('dbStatus').innerHTML =
     '<i class="fas fa-check-circle mr-1"></i>Connected';
+}
+
+// ─── User Management ────────────────────────────────────
+async function loadUsers() {
+  const container = document.getElementById('usersList');
+  container.innerHTML = '<div class="text-gray-400 text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Loading...</div>';
+
+  const { data, error } = await window.supabaseClient.rpc('admin_list_users');
+
+  if (error) {
+    container.innerHTML = `<div class="text-gray-400 text-center py-4 text-sm">
+      <i class="fas fa-exclamation-triangle text-amber-400 mr-2"></i>
+      Could not load users. Run the <strong>admin-user-management.sql</strong> migration first.
+    </div>`;
+    console.error('Error loading users:', error);
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    container.innerHTML = '<div class="text-gray-400 text-center py-4 text-sm">No users found.</div>';
+    return;
+  }
+
+  container.innerHTML = data.map(u => {
+    const isAdminUser = u.role === 'admin';
+    const roleClass = isAdminUser ? 'text-glassAero-gold' : 'text-gray-400';
+    const roleLabel = isAdminUser ? 'Admin' : 'User';
+    const lastLogin = u.last_sign_in ? new Date(u.last_sign_in).toLocaleDateString() : 'Never';
+
+    return `
+      <div class="flex items-center gap-4 p-3 bg-white/5 rounded-lg">
+        <div class="w-8 h-8 bg-glassAero-sky/20 rounded-full flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-user text-glassAero-sky text-xs"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-white text-sm font-medium truncate">${u.email}</p>
+          <p class="text-xs text-gray-500">Last login: ${lastLogin}</p>
+        </div>
+        <span class="text-xs ${roleClass} font-medium w-14 text-center">${roleLabel}</span>
+        <button onclick="showResetPwModal('${u.id}', '${u.email.replace(/'/g, "\\'")}')"
+          class="text-glassAero-sky hover:text-sky-300 transition text-sm px-3 py-1 rounded-lg bg-glassAero-sky/10 hover:bg-glassAero-sky/20"
+          title="Reset Password">
+          <i class="fas fa-key mr-1"></i>Reset
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+function showResetPwModal(userId, email) {
+  document.getElementById('resetPwUserId').value = userId;
+  document.getElementById('resetPwUserLabel').textContent = 'Reset password for: ' + email;
+  document.getElementById('resetPwNew').value = '';
+  document.getElementById('resetPwConfirm').value = '';
+  document.getElementById('resetPwError').classList.add('hidden');
+  document.getElementById('resetPwSuccess').classList.add('hidden');
+  document.getElementById('resetPwBtn').disabled = false;
+  document.getElementById('resetPwBtn').textContent = 'Reset Password';
+  document.getElementById('resetPwModal').classList.remove('hidden');
+}
+
+function hideResetPwModal() {
+  document.getElementById('resetPwModal').classList.add('hidden');
+}
+
+async function handleResetPassword() {
+  const userId = document.getElementById('resetPwUserId').value;
+  const newPw = document.getElementById('resetPwNew').value;
+  const confirmPw = document.getElementById('resetPwConfirm').value;
+  const errorEl = document.getElementById('resetPwError');
+  const successEl = document.getElementById('resetPwSuccess');
+  const btn = document.getElementById('resetPwBtn');
+
+  errorEl.classList.add('hidden');
+  successEl.classList.add('hidden');
+
+  if (newPw.length < 6) {
+    errorEl.textContent = 'Password must be at least 6 characters.';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+  if (newPw !== confirmPw) {
+    errorEl.textContent = 'Passwords do not match.';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Resetting...';
+
+  const { error } = await window.supabaseClient.rpc('admin_reset_password', {
+    target_user_id: userId,
+    new_password: newPw
+  });
+
+  if (error) {
+    errorEl.textContent = error.message || 'Failed to reset password.';
+    errorEl.classList.remove('hidden');
+    btn.disabled = false;
+    btn.textContent = 'Reset Password';
+  } else {
+    successEl.textContent = 'Password reset successfully!';
+    successEl.classList.remove('hidden');
+    btn.textContent = 'Done';
+    setTimeout(() => hideResetPwModal(), 1500);
+  }
 }
 
 function renderParts() {
