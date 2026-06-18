@@ -96,7 +96,14 @@
       await new Promise(resolve => setTimeout(resolve, 100));
       if (!window.supabaseClient) return;
       const { data: { session } } = await window.supabaseClient.auth.getSession();
-      if (session) window.location.href = 'index.html';
+      if (session) {
+        const role = session.user?.app_metadata?.role;
+        if (role === 'it_admin') {
+          window.location.href = 'user-management.html';
+        } else {
+          window.location.href = 'index.html';
+        }
+      }
     }
     checkSession();
 
@@ -133,7 +140,12 @@
           btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Sign In';
           return;
         }
-        window.location.href = 'index.html';
+        const role = data.user?.app_metadata?.role;
+        if (role === 'it_admin') {
+          window.location.href = 'user-management.html';
+        } else {
+          window.location.href = 'index.html';
+        }
       } catch (error) {
         showError('An error occurred. Please try again.');
         btn.disabled = false;

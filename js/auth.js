@@ -27,6 +27,32 @@ function isAdmin(user) {
   return user?.app_metadata?.role === 'admin';
 }
 
+/** Returns true if user has IT admin role (app_metadata.role === 'it_admin') */
+function isItAdmin(user) {
+  return user?.app_metadata?.role === 'it_admin';
+}
+
+/** Returns the user's role string */
+function getUserRole(user) {
+  return user?.app_metadata?.role || 'user';
+}
+
+/** Pages that IT Admins are NOT allowed to access */
+const IT_ADMIN_BLOCKED_PAGES = [
+  'index.html',
+  'repair-orders.html',
+  'new-repair-order.html',
+  'repair-order-detail.html',
+  'inventory.html',
+  'bom.html',
+  'settings.html',
+  'reports.html',
+  'import.html',
+  'scan.html',
+  'support-tickets.html',
+  'training-manual.html'
+];
+
 async function signOut() {
   if (!window.supabaseClient) return;
   await window.supabaseClient.auth.signOut();
@@ -134,6 +160,15 @@ async function initializeAuth() {
   const user = await requireAuth();
 
   if (user) {
+    // Check if IT Admin is trying to access a blocked page
+    if (isItAdmin(user)) {
+      const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+      if (IT_ADMIN_BLOCKED_PAGES.includes(currentPage)) {
+        window.location.href = 'user-management.html';
+        return null;
+      }
+    }
+
     injectChangePasswordModal();
 
     const nav = document.querySelector('nav .flex.items-center.gap-6');
@@ -151,6 +186,7 @@ async function initializeAuth() {
       `;
       nav.appendChild(userInfo);
 
+      // Hide admin-only elements from non-admins (but IT admins won't see these pages anyway)
       if (!isAdmin(user)) {
         document.querySelectorAll('[data-admin-only]').forEach(el => el.style.display = 'none');
       }
