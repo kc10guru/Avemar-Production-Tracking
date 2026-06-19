@@ -22,14 +22,26 @@ async function getCurrentUser() {
   return user;
 }
 
-/** Returns true if user has admin role (app_metadata.role === 'admin') */
-function isAdmin(user) {
-  return user?.app_metadata?.role === 'admin';
+/** Returns true if user has super_admin role (full access to everything) */
+function isSuperAdmin(user) {
+  return user?.app_metadata?.role === 'super_admin';
 }
 
-/** Returns true if user has IT admin role (app_metadata.role === 'it_admin') */
+/** Returns true if user has admin role (production management) or super_admin */
+function isAdmin(user) {
+  const role = user?.app_metadata?.role;
+  return role === 'admin' || role === 'super_admin';
+}
+
+/** Returns true if user has IT admin role (user CRUD only) */
 function isItAdmin(user) {
   return user?.app_metadata?.role === 'it_admin';
+}
+
+/** Returns true if user can manage users (it_admin or super_admin, NOT regular admin) */
+function canManageUsers(user) {
+  const role = user?.app_metadata?.role;
+  return role === 'it_admin' || role === 'super_admin';
 }
 
 /** Returns the user's role string */
@@ -173,6 +185,21 @@ async function initializeAuth() {
 
     const nav = document.querySelector('nav .flex.items-center.gap-6');
     if (nav) {
+      // Add User Management link for super_admin users
+      if (isSuperAdmin(user)) {
+        const userMgmtLink = document.createElement('a');
+        userMgmtLink.href = 'user-management.html';
+        userMgmtLink.className = 'text-gray-300 hover:text-white transition';
+        userMgmtLink.innerHTML = '<i class="fas fa-users-cog mr-2"></i>Users';
+        // Insert before Settings link if it exists, otherwise append
+        const settingsLink = nav.querySelector('a[href="settings.html"]');
+        if (settingsLink) {
+          nav.insertBefore(userMgmtLink, settingsLink);
+        } else {
+          nav.appendChild(userMgmtLink);
+        }
+      }
+
       const userInfo = document.createElement('div');
       userInfo.className = 'flex items-center gap-3 ml-4 pl-4 border-l border-white/20';
       userInfo.innerHTML = `

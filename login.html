@@ -98,6 +98,7 @@
       const { data: { session } } = await window.supabaseClient.auth.getSession();
       if (session) {
         const role = session.user?.app_metadata?.role;
+        // IT Admin goes to user management only, everyone else to dashboard
         if (role === 'it_admin') {
           window.location.href = 'user-management.html';
         } else {

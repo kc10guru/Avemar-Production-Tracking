@@ -24,7 +24,7 @@ async function loadUsers() {
 
 function updateStats() {
   const total = allUsers.length;
-  const admins = allUsers.filter(u => u.role === 'admin' || u.role === 'it_admin').length;
+  const admins = allUsers.filter(u => u.role === 'admin' || u.role === 'it_admin' || u.role === 'super_admin').length;
   const standard = allUsers.filter(u => u.role === 'user' || !u.role).length;
 
   document.getElementById('totalUsers').textContent = total;
@@ -86,6 +86,14 @@ function renderUserList() {
 
 function getRoleDisplay(role) {
   switch (role) {
+    case 'super_admin':
+      return {
+        label: 'Super Admin',
+        icon: 'fa-crown',
+        textClass: 'text-red-400',
+        bgClass: 'bg-red-500/20',
+        pillClass: 'bg-red-500/20'
+      };
     case 'admin':
       return {
         label: 'Admin',
@@ -114,10 +122,15 @@ function getRoleDisplay(role) {
 }
 
 function canModifyUser(targetRole) {
-  if (currentUserRole === 'admin') return true;
-  if (currentUserRole === 'it_admin') {
-    return targetRole !== 'admin' && targetRole !== 'it_admin';
+  // super_admin can modify anyone except other super_admins
+  if (currentUserRole === 'super_admin') {
+    return targetRole !== 'super_admin';
   }
+  // it_admin can modify users and regular admins, but not super_admin or other it_admins
+  if (currentUserRole === 'it_admin') {
+    return targetRole !== 'super_admin' && targetRole !== 'it_admin';
+  }
+  // regular admin has VIEW ONLY access - no CRUD
   return false;
 }
 
@@ -131,6 +144,17 @@ function showAddUserModal() {
   document.getElementById('addUserSuccess').classList.add('hidden');
   document.getElementById('addUserBtn').disabled = false;
   document.getElementById('addUserBtn').innerHTML = '<i class="fas fa-plus mr-2"></i>Create User';
+  
+  // Super admin can create IT admin users
+  const roleSelect = document.getElementById('newUserRole');
+  const hasItAdminOption = Array.from(roleSelect.options).some(o => o.value === 'it_admin');
+  if (currentUserRole === 'super_admin' && !hasItAdminOption) {
+    const opt = document.createElement('option');
+    opt.value = 'it_admin';
+    opt.textContent = 'IT Admin (User Management)';
+    roleSelect.appendChild(opt);
+  }
+  
   document.getElementById('addUserModal').classList.remove('hidden');
 }
 
@@ -193,11 +217,22 @@ async function handleAddUser(event) {
 function showEditRoleModal(userId, email, currentRole) {
   document.getElementById('editRoleUserId').value = userId;
   document.getElementById('editRoleUserLabel').textContent = 'Change role for: ' + email;
-  document.getElementById('editRoleSelect').value = currentRole || 'user';
   document.getElementById('editRoleError').classList.add('hidden');
   document.getElementById('editRoleSuccess').classList.add('hidden');
   document.getElementById('editRoleBtn').disabled = false;
   document.getElementById('editRoleBtn').innerHTML = '<i class="fas fa-save mr-2"></i>Save';
+  
+  // Super admin can assign IT admin role
+  const roleSelect = document.getElementById('editRoleSelect');
+  const hasItAdminOption = Array.from(roleSelect.options).some(o => o.value === 'it_admin');
+  if (currentUserRole === 'super_admin' && !hasItAdminOption) {
+    const opt = document.createElement('option');
+    opt.value = 'it_admin';
+    opt.textContent = 'IT Admin (User Management)';
+    roleSelect.appendChild(opt);
+  }
+  
+  document.getElementById('editRoleSelect').value = currentRole || 'user';
   document.getElementById('editRoleModal').classList.remove('hidden');
 }
 
@@ -340,36 +375,56 @@ async function handleResetPassword() {
 
 // ─── Initialize ─────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  const user = await requireAuth();
-  if (!user) return;
-
-  currentUserRole = user.app_metadata?.role || 'user';
-
-  if (currentUserRole !== 'admin' && currentUserRole !== 'it_admin') {
-    window.location.href = 'index.html';
-    return;
-  }
-
-  const nav = document.getElementById('navLinks');
-  if (nav) {
-    if (currentUserRole === 'admin') {
-      nav.innerHTML = `
-        <a href="index.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-chart-line mr-2"></i>Dashboard</a>
-        <a href="user-management.html" class="text-glassAero-gold font-medium"><i class="fas fa-users-cog mr-2"></i>User Management</a>
-        <a href="settings.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-cog mr-2"></i>Settings</a>
-      `;
+  try {
+    console.log('User Management: Initializing...');
+    
+    const user = await requireAuth();
+    console.log('User Management: Auth result:', user);
+    
+    if (!user) {
+      console.log('User Management: No user, returning');
+      return;
     }
 
-    const userInfo = document.createElement('div');
-    userInfo.className = 'flex items-center gap-3 ml-4 pl-4 border-l border-white/20';
-    userInfo.innerHTML = `
-      <span class="text-gray-400 text-sm">${user.email}</span>
-      <button onclick="signOut()" class="text-red-400 hover:text-red-300 transition" title="Sign Out">
-        <i class="fas fa-sign-out-alt"></i>
-      </button>
-    `;
-    nav.appendChild(userInfo);
-  }
+    currentUserRole = user.app_metadata?.role || 'user';
+    console.log('User Management: Role =', currentUserRole, 'Email =', user.email);
 
-  await loadUsers();
+    // Only it_admin, super_admin can access this page (admin is view-only but allowed)
+    const allowedRoles = ['it_admin', 'super_admin', 'admin'];
+    if (!allowedRoles.includes(currentUserRole)) {
+      console.log('User Management: Not authorized, redirecting');
+      window.location.href = 'index.html';
+      return;
+    }
+
+    const nav = document.getElementById('navLinks');
+    console.log('User Management: Nav element found:', !!nav);
+    
+    if (nav) {
+      // super_admin and admin get full nav with Dashboard link
+      if (currentUserRole === 'super_admin' || currentUserRole === 'admin') {
+        nav.innerHTML = `
+          <a href="index.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-chart-line mr-2"></i>Dashboard</a>
+          <a href="user-management.html" class="text-glassAero-gold font-medium"><i class="fas fa-users-cog mr-2"></i>User Management</a>
+          <a href="settings.html" class="text-gray-300 hover:text-white transition"><i class="fas fa-cog mr-2"></i>Settings</a>
+        `;
+      }
+      // it_admin only sees User Management (default HTML)
+
+      const userInfo = document.createElement('div');
+      userInfo.className = 'flex items-center gap-3 ml-4 pl-4 border-l border-white/20';
+      userInfo.innerHTML = `
+        <span class="text-gray-400 text-sm">${user.email || 'Unknown'}</span>
+        <button onclick="signOut()" class="text-red-400 hover:text-red-300 transition" title="Sign Out">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      `;
+      nav.appendChild(userInfo);
+      console.log('User Management: User info appended');
+    }
+
+    await loadUsers();
+  } catch (err) {
+    console.error('User Management: Initialization error:', err);
+  }
 });
